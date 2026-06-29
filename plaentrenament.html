@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pla d'Entrenament Personal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #181818;
+    --surface2: #222222;
+    --border: #2a2a2a;
+    --border2: #333;
+    --text: #f0ede8;
+    --muted: #888;
+    --dim: #555;
+    --green: #a8d5a2;
+    --green-bg: #1a2e1a;
+    --green-border: #2d4a2d;
+    --blue: #a2c4d5;
+    --blue-bg: #1a2530;
+    --amber: #d5c4a2;
+    --amber-bg: #2e2a1a;
+    --amber-border: #4a3a1a;
+    --red: #d5a2a2;
+    --red-bg: #2e1a1a;
+    --purple: #c4a2d5;
+    --purple-bg: #251a2e;
+    --purple-border: #3a2a45;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+  .mono { font-family: 'DM Mono', monospace; }
+  header {
+    max-width: 880px;
+    margin: 0 auto 2.5rem;
+    border-bottom: 1px solid var(--border2);
+    padding-bottom: 1.5rem;
+  }
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  h1 { font-size: clamp(1.8rem,5vw,2.8rem); font-weight:800; letter-spacing:-0.03em; line-height:1.1; }
+  h1 span { color: var(--green); }
+  .header-meta { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); text-align:right; line-height:1.8; margin-top:4px; }
+  .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; margin-top:1.25rem; }
+  .stat { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; }
+  .stat-label { font-size:10px; color:var(--muted); font-family:'DM Mono',monospace; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.05em; }
+  .stat-val { font-size:18px; font-weight:700; }
+  .stat-val span { font-size:12px; font-weight:400; color:var(--muted); }
+  .stat.ok .stat-val { color: var(--green); }
+  .stat.warn .stat-val { color: var(--amber); }
+  .container { max-width:880px; margin:0 auto; }
+  section { margin-bottom:2rem; }
+  .section-label { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.75rem; display:flex; align-items:center; gap:8px; }
+  .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1.25rem; margin-bottom:10px; }
+
+  /* CALORIC BALANCE VISUAL */
+  .balance-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
+  .balance-item { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center; }
+  .balance-item .b-label { font-size:10px; font-family:'DM Mono',monospace; color:var(--muted); margin-bottom:6px; }
+  .balance-item .b-val { font-size:22px; font-weight:800; }
+  .balance-item .b-sub { font-size:10px; color:var(--muted); margin-top:3px; font-family:'DM Mono',monospace; }
+  .balance-item.green .b-val { color:var(--green); }
+  .balance-item.amber .b-val { color:var(--amber); }
+  .balance-item.red .b-val { color:var(--red); }
+  .deficit-bar { height:12px; border-radius:6px; background:var(--border); overflow:hidden; margin:8px 0 4px; position:relative; }
+  .deficit-fill { height:100%; background: linear-gradient(90deg, var(--green) 0%, var(--amber) 70%, var(--red) 100%); }
+  .deficit-needle { position:absolute; top:-2px; height:16px; width:2px; background:white; border-radius:1px; transform:translateX(-50%); }
+  .deficit-labels { display:flex; justify-content:space-between; font-size:9px; font-family:'DM Mono',monospace; color:var(--muted); }
+
+  /* WEEK GRID */
+  .week-grid { display:flex; flex-direction:column; gap:6px; }
+  .week-row { display:grid; grid-template-columns:100px 1fr auto; align-items:start; gap:10px; padding:12px 14px; border-radius:8px; border:1px solid var(--border); }
+  .week-row.gym    { border-color:var(--green-border); background:var(--green-bg); }
+  .week-row.pool   { border-color:#1a3040; background:#111c25; }
+  .week-row.combo  { border-color:var(--amber-border); background:var(--amber-bg); }
+  .week-row.rest   { background:var(--surface2); }
+  .week-day { font-size:12px; font-weight:700; color:var(--text); font-family:'DM Mono',monospace; }
+  .week-type { font-size:10px; font-weight:500; margin-top:2px; }
+  .week-row.gym   .week-type { color:var(--green); }
+  .week-row.pool  .week-type { color:var(--blue); }
+  .week-row.combo .week-type { color:var(--amber); }
+  .week-row.rest  .week-type { color:var(--muted); }
+  .blocks { display:flex; flex-wrap:wrap; gap:5px; align-items:center; }
+  .bl { font-size:11px; font-family:'DM Mono',monospace; padding:3px 8px; border-radius:4px; white-space:nowrap; }
+  .bl-work   { background:#1a1a1a; color:var(--muted); border:1px solid var(--border); }
+  .bl-gym    { background:var(--green-bg); color:var(--green); border:1px solid var(--green-border); font-weight:500; }
+  .bl-pool   { background:#111c25; color:var(--blue); border:1px solid #1a3040; font-weight:500; }
+  .bl-combo  { background:var(--amber-bg); color:var(--amber); border:1px solid var(--amber-border); font-weight:500; }
+  .bl-rest   { background:#1a1a1a; color:var(--dim); border:1px solid var(--border); }
+  .bl-walk   { background:#1c1c1a; color:#b5b098; border:1px solid #333; }
+  .kcal-badge { font-size:11px; font-family:'DM Mono',monospace; color:var(--green); background:var(--green-bg); border:1px solid var(--green-border); border-radius:4px; padding:3px 8px; white-space:nowrap; }
+  .kcal-badge.dim { color:var(--muted); background:var(--surface2); border-color:var(--border); }
+
+  /* TABS */
+  .tabs { display:flex; gap:6px; margin-bottom:1rem; flex-wrap:wrap; }
+  .tab-btn { font-size:11px; font-family:'DM Mono',monospace; padding:5px 12px; border-radius:4px; border:1px solid var(--border2); background:transparent; color:var(--muted); cursor:pointer; transition:all 0.15s; }
+  .tab-btn:hover { border-color:var(--green-border); color:var(--green); }
+  .tab-btn.active { background:var(--green-bg); color:var(--green); border-color:var(--green-border); font-weight:500; }
+  .tab-btn.pool-btn:hover { border-color:#1a3040; color:var(--blue); }
+  .tab-btn.pool-btn.active { background:#111c25; color:var(--blue); border-color:#1a3040; }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+  .dur-tag { display:inline-block; font-size:10px; font-family:'DM Mono',monospace; padding:3px 10px; background:var(--green-bg); color:var(--green); border:1px solid var(--green-border); border-radius:4px; margin-bottom:12px; }
+  .dur-tag.pool { background:#111c25; color:var(--blue); border-color:#1a3040; }
+
+  .ex-list { display:flex; flex-direction:column; }
+  .ex-item { display:grid; grid-template-columns:24px 64px 1fr auto; gap:10px; align-items:center; padding:9px 0; border-bottom:1px solid var(--border); }
+  .ex-item:last-child { border-bottom:none; }
+  .ex-num { font-size:10px; font-family:'DM Mono',monospace; color:var(--dim); padding-top:2px; align-self:start; }
+  .ex-img { width:64px; height:52px; object-fit:cover; border-radius:6px; border:1px solid var(--border2); background:var(--surface2); display:block; flex-shrink:0; }
+  .ex-img-placeholder { width:64px; height:52px; border-radius:6px; border:1px dashed var(--border2); background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:9px; font-family:'DM Mono',monospace; color:var(--dim); text-align:center; flex-shrink:0; line-height:1.3; padding:4px; }
+  .ex-name { font-size:13px; color:var(--text); font-weight:600; }
+  .ex-tip { font-size:11px; color:var(--muted); margin-top:2px; font-weight:400; }
+  .ex-sets { font-size:11px; font-family:'DM Mono',monospace; color:var(--green); text-align:right; white-space:nowrap; padding-top:2px; align-self:start; }
+  .ex-sets.blue { color:var(--blue); }
+
+  .note-box { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px 14px; font-size:12px; color:var(--muted); font-family:'DM Mono',monospace; margin-top:12px; line-height:1.7; }
+  .note-box b { color:var(--text); font-weight:600; }
+
+  footer { max-width:880px; margin:2rem auto 0; padding-top:1.5rem; border-top:1px solid var(--border); font-size:11px; font-family:'DM Mono',monospace; color:var(--dim); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+
+  @media (max-width:600px) {
+    .week-row { grid-template-columns:80px 1fr; }
+    .kcal-badge { display:none; }
+    .balance-grid { grid-template-columns:1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <h1>Pla<br><span>Entrenament</span><br>Personal</h1>
+    <div class="header-meta">
+      Objectiu: 75 kg<br>
+      Pes actual: 91 kg<br>
+      A perdre: 16 kg<br>
+      Horari feina: 8:00–16:30
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat ok">
+      <div class="stat-label">Cal. cremades/setm.</div>
+      <div class="stat-val">15.276 <span>kcal</span></div>
+    </div>
+    <div class="stat warn">
+      <div class="stat-label">Ingesta alim./setm.</div>
+      <div class="stat-val">~13.125 <span>kcal</span></div>
+    </div>
+    <div class="stat ok">
+      <div class="stat-label">Dèficit base dieta</div>
+      <div class="stat-val">~2.150 <span>kcal</span></div>
+    </div>
+    <div class="stat warn">
+      <div class="stat-label">Kcal exercici extra</div>
+      <div class="stat-val">~4.850 <span>kcal</span></div>
+    </div>
+    <div class="stat ok">
+      <div class="stat-label">Dèficit total objectiu</div>
+      <div class="stat-val">7.000 <span>kcal/s</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- BALANÇ CALÒRIC -->
+  <section>
+    <div class="section-label">Balanç calòric setmanal</div>
+    <div class="card">
+      <div class="balance-grid">
+        <div class="balance-item green">
+          <div class="b-label">Cremat (metabolisme + exercici)</div>
+          <div class="b-val">~20.126</div>
+          <div class="b-sub">kcal setmanals</div>
+        </div>
+        <div class="balance-item amber">
+          <div class="b-label">Ingerit (alimentació)</div>
+          <div class="b-val">~13.125</div>
+          <div class="b-sub">kcal setmanals</div>
+        </div>
+        <div class="balance-item red">
+          <div class="b-label">Dèficit total</div>
+          <div class="b-val">~7.000</div>
+          <div class="b-sub">kcal → ~1 kg greix/s</div>
+        </div>
+      </div>
+      <div class="deficit-bar">
+        <div class="deficit-fill" style="width:100%;"></div>
+        <div class="deficit-needle" style="left:65.3%;"></div>
+      </div>
+      <div class="deficit-labels">
+        <span>0 kcal dèficit</span>
+        <span style="color:var(--amber);">↑ Posició actual (7.000)</span>
+        <span>10.000+ kcal</span>
+      </div>
+      <div class="note-box" style="margin-top:12px;">
+        <b>Important:</b> Un dèficit de 1 kg/setmana és al límit del recomanat. Si et sents molt fatigat o passes gana extrema, puja a 1.900–2.000 kcal/dia i accepta perdre 0,75 kg/setmana. La constància bat la urgència.
+      </div>
+    </div>
+  </section>
+
+  <!-- SETMANA -->
+  <section>
+    <div class="section-label">Distribució setmanal d'exercici</div>
+    <div class="card">
+      <div class="week-grid">
+
+        <div class="week-row combo">
+          <div>
+            <div class="week-day">Dilluns</div>
+            <div class="week-type">Gimnas — Tren superior</div>
+          </div>
+          <div class="blocks">
+            <span class="bl bl-work">8:00–16:30 Feina</span>
+            <span class="bl bl-combo">17:00–18:15 Gimnas (75 min)</span>
+          </div>
+          <span class="kcal-badge">~550 kcal</span>
+        </div>
+
+        <div class="week-row pool">
+          <div>
+            <div class="week-day">Dimarts</div>
+            <div class="week-type">Piscina — Cardio i resistència</div>
+          </div>
+          <div class="blocks">
+            <span class="bl bl-work">8:00–16:30 Feina</span>
+            <span class="bl bl-pool">17:00–17:45 Piscina (45 min)</span>
+          </div>
+          <span class="kcal-badge">~600 kcal</span>
+        </div>
+
+        <div class="week-row gym">
+          <div>
+            <div class="week-day">Dimecres</div>
+            <div class="week-type">Gimnas — Tren inferior</div>
+          </div>
+          <div class="blocks">
+            <span class="bl bl-work">8:00–16:30 Feina</span>
+            <span class="bl bl-gym">17:00–18:15 Gimnas (75 min)</span>
+          </div>
+          <span class="kcal-badge">~500 kcal</span>
+        </div>
+
+        <div class="week-row pool">
+          <div>
+            <div class="week-day">Dijous</div>
+            <div class="week-type">Piscina — Intervals (HIIT aquàtic)</div>
+          </div>
+          <div class="blocks">
+            <span class="bl bl-work">8:00–16:30 Feina</span>
+            <span class="bl bl-pool">17:00–17:45 Piscina (45 min)</span>
+          </div>
+          <span class="kcal-badge">~650 kcal</span>
+        </div>
+
+        <div class="week-row combo">
+          <div>
+            <div class="week-day">Divendres</div>
+            <div class="week-type">Gimnas — Full body + Cardio</div>
+          </div>
+          <div class="blocks">
+            <span class="bl bl-work">8:00–16:30 Feina</span>
+            <span class="bl bl-combo">17:00–18:30 Gimnas (90 min)</span>
+          </div>
+          <span class="kcal-badge">~700 kcal</span>
+        </div>
+
+        <div class="week-row pool">
+          <div>
+            <div class="week-day">Dissabte</div>
+            <div class="week-type">Piscina — Sessió llarga (tarda)</div>
+          </div>
+          <div class="blocks">
+            <span class="bl bl-rest">Despertar tard (dinar)</span>
+            <span class="bl bl-pool">15:00–16:00 Piscina (60 min)</span>
+            <span class="bl bl-walk">Passejada opcional</span>
+          </div>
+          <span class="kcal-badge">~750 kcal</span>
+        </div>
+
+        <div class="week-row rest">
+          <div>
+            <div class="week-day">Diumenge</div>
+            <div class="week-type">Descans actiu</div>
+          </div>
+          <div class="blocks">
+            <span class="bl bl-rest">Despertar tard (dinar)</span>
+            <span class="bl bl-walk">Passejada 45–60 min</span>
+          </div>
+          <span class="kcal-badge dim">~100 kcal</span>
+        </div>
+
+      </div>
+      <div class="note-box">
+        <b>Total exercici extra:</b> ~3.750 kcal d'exercici dirigit + ~1.100 kcal d'activitat base (caminar feina, NEAT) = ~4.850 kcal · <b>Dèficit total aconseguit:</b> 2.150 (dieta) + 4.850 (exercici) = <span style="color:var(--green);">~7.000 kcal ✓</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRAMA GIMNAS -->
+  <section>
+    <div class="section-label">Programa de gimnas (3 sessions)</div>
+    <div class="card">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('gym','dl',this)">Dilluns — Tren superior</button>
+        <button class="tab-btn" onclick="showTab('gym','dc',this)">Dimecres — Tren inferior</button>
+        <button class="tab-btn" onclick="showTab('gym','dv',this)">Divendres — Full body</button>
+      </div>
+
+      <div id="gym-dl" class="tab-panel active">
+        <div class="dur-tag">75 min · inclou 15 min cardio final</div>
+        <div class="ex-list">
+          <!-- Foto: escalfament_cinta.jpg -->
+          <div class="ex-item"><span class="ex-num">0</span><img class="ex-img" src="escalfament_cinta.jpg" alt="Escalfament cinta" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>escalfament_<br>cinta.jpg</div>'"><div><div class="ex-name">Escalfament cinta o bici</div><div class="ex-tip">Ritme suau, pols a 120–130 ppm</div></div><span class="ex-sets">8 min</span></div>
+          <!-- Foto: press_banca.jpg -->
+          <div class="ex-item"><span class="ex-num">1</span><img class="ex-img" src="press_banca.jpg" alt="Press de banca" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>press_<br>banca.jpg</div>'"><div><div class="ex-name">Press de banca amb barra</div><div class="ex-tip">Descans 90 seg entre sèries</div></div><span class="ex-sets">4 × 8–10</span></div>
+          <!-- Foto: lat_pulldown.jpg -->
+          <div class="ex-item"><span class="ex-num">2</span><img class="ex-img" src="lat_pulldown.jpg" alt="Lat pulldown" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>lat_<br>pulldown.jpg</div>'"><div><div class="ex-name">Lat pulldown o dominades assistides</div><div class="ex-tip">Agafada ampla, baixa fins la barbeta</div></div><span class="ex-sets">4 × 10</span></div>
+          <!-- Foto: press_militar.jpg -->
+          <div class="ex-item"><span class="ex-num">3</span><img class="ex-img" src="press_militar.jpg" alt="Press militar" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>press_<br>militar.jpg</div>'"><div><div class="ex-name">Press militar amb mancuernes</div><div class="ex-tip">Assegut, colzes a 90°</div></div><span class="ex-sets">3 × 10</span></div>
+          <!-- Foto: cable_row.jpg -->
+          <div class="ex-item"><span class="ex-num">4</span><img class="ex-img" src="cable_row.jpg" alt="Cable row" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>cable_<br>row.jpg</div>'"><div><div class="ex-name">Rem en politja baixa (cable row)</div><div class="ex-tip">Esquena recta, apreta l'escàpula</div></div><span class="ex-sets">3 × 12</span></div>
+          <!-- Foto: curls_biceps.jpg -->
+          <div class="ex-item"><span class="ex-num">5</span><img class="ex-img" src="curls_biceps.jpg" alt="Cúrls bíceps" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>curls_<br>biceps.jpg</div>'"><div><div class="ex-name">Cúrls de bíceps alternats</div><div class="ex-tip">Sense balanceig del tronc</div></div><span class="ex-sets">3 × 12</span></div>
+          <!-- Foto: triceps_politja.jpg -->
+          <div class="ex-item"><span class="ex-num">6</span><img class="ex-img" src="triceps_politja.jpg" alt="Tríceps politja" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>triceps_<br>politja.jpg</div>'"><div><div class="ex-name">Extensió de tríceps en politja</div><div class="ex-tip">Colzes fixes, empenta cap avall</div></div><span class="ex-sets">3 × 12</span></div>
+          <!-- Foto: cardio_cinta.jpg -->
+          <div class="ex-item"><span class="ex-num">7</span><img class="ex-img" src="cardio_cinta.jpg" alt="Cardio cinta" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>cardio_<br>cinta.jpg</div>'"><div><div class="ex-name">Cardio final — cinta inclinada</div><div class="ex-tip">Inclinació 6–8%, ritme constant per cremar kcal</div></div><span class="ex-sets">15 min</span></div>
+        </div>
+      </div>
+
+      <div id="gym-dc" class="tab-panel">
+        <div class="dur-tag">75 min · inclou 15 min cardio final</div>
+        <div class="ex-list">
+          <!-- Foto: escalfament_cinta.jpg -->
+          <div class="ex-item"><span class="ex-num">0</span><img class="ex-img" src="escalfament_cinta.jpg" alt="Escalfament" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>escalfament_<br>cinta.jpg</div>'"><div><div class="ex-name">Escalfament cinta o bici</div><div class="ex-tip">Ritme suau, activació articular</div></div><span class="ex-sets">8 min</span></div>
+          <!-- Foto: sentadilles.jpg -->
+          <div class="ex-item"><span class="ex-num">1</span><img class="ex-img" src="sentadilles.jpg" alt="Sentadilles" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>sentadilles<br>.jpg</div>'"><div><div class="ex-name">Sentadilles amb barra</div><div class="ex-tip">Baixa fins paral·lel, genolls sobre puntes</div></div><span class="ex-sets">4 × 8–10</span></div>
+          <!-- Foto: pes_mort.jpg -->
+          <div class="ex-item"><span class="ex-num">2</span><img class="ex-img" src="pes_mort.jpg" alt="Pes mort romanès" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>pes_mort<br>.jpg</div>'"><div><div class="ex-name">Pes mort romanès</div><div class="ex-tip">Esquena neutra, nota els isquiotibials</div></div><span class="ex-sets">3 × 10</span></div>
+          <!-- Foto: extensio_quadriceps.jpg -->
+          <div class="ex-item"><span class="ex-num">3</span><img class="ex-img" src="extensio_quadriceps.jpg" alt="Extensió quàdriceps" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>extensio_<br>quadriceps.jpg</div>'"><div><div class="ex-name">Extensió de quàdriceps a la màquina</div><div class="ex-tip">Moviment controlat a la baixada</div></div><span class="ex-sets">3 × 12</span></div>
+          <!-- Foto: curl_femoral.jpg -->
+          <div class="ex-item"><span class="ex-num">4</span><img class="ex-img" src="curl_femoral.jpg" alt="Curl femoral" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>curl_<br>femoral.jpg</div>'"><div><div class="ex-name">Curl femoral estirat</div><div class="ex-tip">Peus en flexió, apreta gluti</div></div><span class="ex-sets">3 × 12</span></div>
+          <!-- Foto: hip_thrust.jpg -->
+          <div class="ex-item"><span class="ex-num">5</span><img class="ex-img" src="hip_thrust.jpg" alt="Hip thrust" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>hip_thrust<br>.jpg</div>'"><div><div class="ex-name">Hip thrust amb barra</div><div class="ex-tip">Espatlles al banc, apreta gluti dalt</div></div><span class="ex-sets">3 × 12</span></div>
+          <!-- Foto: bessons.jpg -->
+          <div class="ex-item"><span class="ex-num">6</span><img class="ex-img" src="bessons.jpg" alt="Elevació bessons" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>bessons<br>.jpg</div>'"><div><div class="ex-name">Elevació de bessons dret</div><div class="ex-tip">Control a la baixada, rang complet</div></div><span class="ex-sets">3 × 15</span></div>
+          <!-- Foto: cardio_cinta.jpg -->
+          <div class="ex-item"><span class="ex-num">7</span><img class="ex-img" src="cardio_cinta.jpg" alt="Cardio cinta" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>cardio_<br>cinta.jpg</div>'"><div><div class="ex-name">Cardio final — cinta inclinada</div><div class="ex-tip">Inclinació 6–8%, caminar a bon ritme</div></div><span class="ex-sets">15 min</span></div>
+        </div>
+      </div>
+
+      <div id="gym-dv" class="tab-panel">
+        <div class="dur-tag">90 min · sessió més llarga, inclou 20 min cardio final</div>
+        <div class="ex-list">
+          <!-- Foto: escalfament_cinta.jpg -->
+          <div class="ex-item"><span class="ex-num">0</span><img class="ex-img" src="escalfament_cinta.jpg" alt="Escalfament" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>escalfament_<br>cinta.jpg</div>'"><div><div class="ex-name">Escalfament cinta o bici</div><div class="ex-tip">Ritme moderat, pols a 130–140 ppm</div></div><span class="ex-sets">8 min</span></div>
+          <!-- Foto: sentadilla_goblet.jpg -->
+          <div class="ex-item"><span class="ex-num">1</span><img class="ex-img" src="sentadilla_goblet.jpg" alt="Sentadilla goblet" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>sentadilla_<br>goblet.jpg</div>'"><div><div class="ex-name">Sentadilla goblet amb mancuerna</div><div class="ex-tip">Mancuerna al pit, esquena recta</div></div><span class="ex-sets">3 × 12</span></div>
+          <!-- Foto: press_inclinat.jpg -->
+          <div class="ex-item"><span class="ex-num">2</span><img class="ex-img" src="press_inclinat.jpg" alt="Press inclinat" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>press_<br>inclinat.jpg</div>'"><div><div class="ex-name">Press de banca inclinat</div><div class="ex-tip">Banc 30–45°, treball pectoral alt</div></div><span class="ex-sets">3 × 10</span></div>
+          <!-- Foto: rem_mancuerna.jpg -->
+          <div class="ex-item"><span class="ex-num">3</span><img class="ex-img" src="rem_mancuerna.jpg" alt="Rem mancuerna" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>rem_<br>mancuerna.jpg</div>'"><div><div class="ex-name">Rem amb mancuerna unilateral</div><div class="ex-tip">Genoll al banc, esquena paral·lela</div></div><span class="ex-sets">3 × 10</span></div>
+          <!-- Foto: estocades.jpg -->
+          <div class="ex-item"><span class="ex-num">4</span><img class="ex-img" src="estocades.jpg" alt="Estocades" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>estocades<br>.jpg</div>'"><div><div class="ex-name">Estocades amb mancuernes</div><div class="ex-tip">Pas llarg, genoll davanter no passa el peu</div></div><span class="ex-sets">3 × 10 c/u</span></div>
+          <!-- Foto: flexions.jpg -->
+          <div class="ex-item"><span class="ex-num">5</span><img class="ex-img" src="flexions.jpg" alt="Flexions" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>flexions<br>.jpg</div>'"><div><div class="ex-name">Flexions (push-ups)</div><div class="ex-tip">Pit toca el terra, cos completament recte</div></div><span class="ex-sets">3 × màxim</span></div>
+          <!-- Foto: planxa_lateral.jpg -->
+          <div class="ex-item"><span class="ex-num">6</span><img class="ex-img" src="planxa_lateral.jpg" alt="Planxa lateral" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>planxa_<br>lateral.jpg</div>'"><div><div class="ex-name">Planxa lateral alternada</div><div class="ex-tip">30 seg cada costat</div></div><span class="ex-sets">3 × 30 seg</span></div>
+          <!-- Foto: cardio_elliptica.jpg -->
+          <div class="ex-item"><span class="ex-num">7</span><img class="ex-img" src="cardio_elliptica.jpg" alt="Cardio el·líptica" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>cardio_<br>elliptica.jpg</div>'"><div><div class="ex-name">Cardio final — cinta, bici o el·líptica</div><div class="ex-tip">Intensitat moderada-alta, zona grassa</div></div><span class="ex-sets">20 min</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRAMA PISCINA -->
+  <section>
+    <div class="section-label">Programa de piscina (3 sessions) — 10 m × 5 m</div>
+    <div class="card">
+      <div class="tabs">
+        <button class="tab-btn pool-btn active" onclick="showTab('pool','dm',this)">Dimarts — Cardio base</button>
+        <button class="tab-btn pool-btn" onclick="showTab('pool','dj',this)">Dijous — HIIT aquàtic</button>
+        <button class="tab-btn pool-btn" onclick="showTab('pool','ds',this)">Dissabte — Sessió llarga</button>
+      </div>
+
+      <div id="pool-dm" class="tab-panel active">
+        <div class="dur-tag pool">45 min · ~600 kcal · Cardio de zona grassa</div>
+        <div class="ex-list">
+          <div class="ex-item"><span class="ex-num">0</span><div><div class="ex-name">Escalfament — crol suau</div><div class="ex-tip">10 m anada i tornada sense pausa, ritme molt suau</div></div><span class="ex-sets blue">5 min</span></div>
+          <div class="ex-item"><span class="ex-num">1</span><div><div class="ex-name">Sèries de longitud — crol continu</div><div class="ex-tip">10 m anada + tornada = 1 sèrie. Descans 30 seg entre sèries</div></div><span class="ex-sets blue">10 sèries</span></div>
+          <div class="ex-item"><span class="ex-num">2</span><div><div class="ex-name">Aquajògging lateral</div><div class="ex-tip">Corre lateralment d'una paret a l'altra (5 m). Alta resistència</div></div><span class="ex-sets blue">3 × 3 min</span></div>
+          <div class="ex-item"><span class="ex-num">3</span><div><div class="ex-name">Sèries braça o esquena</div><div class="ex-tip">Varia l'estil per activar musculatura diferent</div></div><span class="ex-sets blue">6 sèries</span></div>
+          <div class="ex-item"><span class="ex-num">4</span><div><div class="ex-name">Estiraments dins l'aigua</div><div class="ex-tip">Agafa la paret, estira isquiotibials i esquena</div></div><span class="ex-sets blue">5 min</span></div>
+        </div>
+        <div class="note-box">La piscina de 10 m és perfecta per fer sèries curtes. Cada "longitud" és una anada de 10 m. <b>No cal saber nedar perfectament</b> — aquajògging i crol bàsic cremen igual de bé.
+        </div>
+      </div>
+
+      <div id="pool-dj" class="tab-panel">
+        <div class="dur-tag pool">45 min · ~650 kcal · Alta intensitat per intervals</div>
+        <div class="ex-list">
+          <div class="ex-item"><span class="ex-num">0</span><div><div class="ex-name">Escalfament — crol suau</div><div class="ex-tip">Ritme molt relaxat, activa el cos</div></div><span class="ex-sets blue">5 min</span></div>
+          <div class="ex-item"><span class="ex-num">1</span><div><div class="ex-name">HIIT: sprint 10 m + pausa</div><div class="ex-tip">Neda / aquajog a màxima intensitat 10 m. Descans 30 seg. Repeteix</div></div><span class="ex-sets blue">10 × 10 m</span></div>
+          <div class="ex-item"><span class="ex-num">2</span><div><div class="ex-name">Treball de cames — kicking</div><div class="ex-tip">Agafia la paret amb els braços, dóna patades de crol 30 seg a màxima velocitat</div></div><span class="ex-sets blue">5 × 30 seg</span></div>
+          <div class="ex-item"><span class="ex-num">3</span><div><div class="ex-name">Aquajògging ràpid</div><div class="ex-tip">Corre d'una paret a l'altra (5 m), alt genoll, braços actius</div></div><span class="ex-sets blue">4 × 2 min</span></div>
+          <div class="ex-item"><span class="ex-num">4</span><div><div class="ex-name">Sèries de recuperació — crol suau</div><div class="ex-tip">Baixa la freqüència cardíaca gradualment</div></div><span class="ex-sets blue">4 sèries</span></div>
+          <div class="ex-item"><span class="ex-num">5</span><div><div class="ex-name">Estiraments i respiració</div><div class="ex-tip">Estira braços, pit i cames. Respira profund</div></div><span class="ex-sets blue">5 min</span></div>
+        </div>
+        <div class="note-box"><b>HIIT a la piscina crema fins a un 30% més que HIIT en terra</b> per la resistència de l'aigua. En 45 min pots cremar 600–700 kcal si mantens la intensitat.</div>
+      </div>
+
+      <div id="pool-ds" class="tab-panel">
+        <div class="dur-tag pool">60 min · ~750 kcal · Sessió de tarda (despertar tardà)</div>
+        <div class="ex-list">
+          <div class="ex-item"><span class="ex-num">0</span><div><div class="ex-name">Escalfament progressiu</div><div class="ex-tip">Comença molt suau, augmenta el ritme cada 2 min</div></div><span class="ex-sets blue">8 min</span></div>
+          <div class="ex-item"><span class="ex-num">1</span><div><div class="ex-name">Crol continu — zona aeròbica</div><div class="ex-tip">Ritme que et permeti parlar però amb esforç. 10 m anada i tornada continus</div></div><span class="ex-sets blue">20 min</span></div>
+          <div class="ex-item"><span class="ex-num">2</span><div><div class="ex-name">Circuit aquàtic (x4 rounds)</div><div class="ex-tip">Aquajog 2 min + kicking paret 30 seg + crol sprint 10 m + descans 1 min</div></div><span class="ex-sets blue">4 rounds</span></div>
+          <div class="ex-item"><span class="ex-num">3</span><div><div class="ex-name">Treball de braços — pull amb pullbuoy</div><div class="ex-tip">Si en tens, cames immòbils, treball de braços pur</div></div><span class="ex-sets blue">6 sèries</span></div>
+          <div class="ex-item"><span class="ex-num">4</span><div><div class="ex-name">Baixada de ritme — neda lliure</div><div class="ex-tip">Estil lliure, molt suau, últims 5 min de recuperació</div></div><span class="ex-sets blue">8 min</span></div>
+        </div>
+        <div class="note-box">Com el dissabte es desperta tard, la sessió va bé cap a les <b>15:00–16:00</b>. No cal anar en dejú — espera 1,5–2 h després de dinar abans d'entrar a l'aigua.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESUM SETMANAL -->
+  <section>
+    <div class="section-label">Resum calòric setmanal detallat</div>
+    <div class="card">
+      <div class="ex-list">
+        <div class="ex-item"><span class="ex-num" style="color:var(--green);">Dl</span><div><div class="ex-name">Gimnas tren superior (75 min)</div><div class="ex-tip">Press banca, lat pulldown, rem, braços + 15 min cardio inclinació</div></div><span class="ex-sets">~550 kcal</span></div>
+        <div class="ex-item"><span class="ex-num" style="color:var(--blue);">Dm</span><div><div class="ex-name">Piscina cardio base (45 min)</div><div class="ex-tip">Crol + aquajògging lateral + braça</div></div><span class="ex-sets">~600 kcal</span></div>
+        <div class="ex-item"><span class="ex-num" style="color:var(--green);">Dc</span><div><div class="ex-name">Gimnas tren inferior (75 min)</div><div class="ex-tip">Sentadilles, pes mort, curl femoral, hip thrust + 15 min cardio</div></div><span class="ex-sets">~500 kcal</span></div>
+        <div class="ex-item"><span class="ex-num" style="color:var(--blue);">Dj</span><div><div class="ex-name">Piscina HIIT aquàtic (45 min)</div><div class="ex-tip">Sprints, kicking, aquajògging d'alta intensitat</div></div><span class="ex-sets">~650 kcal</span></div>
+        <div class="ex-item"><span class="ex-num" style="color:var(--amber);">Dv</span><div><div class="ex-name">Gimnas full body (90 min)</div><div class="ex-tip">Sentadilla, press inclinat, estocades, flexions + 20 min cardio fort</div></div><span class="ex-sets">~700 kcal</span></div>
+        <div class="ex-item"><span class="ex-num" style="color:var(--blue);">Ds</span><div><div class="ex-name">Piscina sessió llarga (60 min)</div><div class="ex-tip">Crol continu + circuit aquàtic + pull</div></div><span class="ex-sets">~750 kcal</span></div>
+        <div class="ex-item"><span class="ex-num" style="color:var(--dim);">Dg</span><div><div class="ex-name">Passejada llarga (45–60 min)</div><div class="ex-tip">Descans actiu, no forçar</div></div><span class="ex-sets">~100 kcal</span></div>
+        <div class="ex-item" style="border-top:1px solid var(--border2); padding-top:12px; margin-top:4px;">
+          <span class="ex-num" style="color:var(--green);">∑</span>
+          <div><div class="ex-name" style="color:var(--green);">Total exercici extra setmanal</div><div class="ex-tip">+ ~1.100 kcal NEAT (caminar feina, activitat quotidiana) = 4.850 kcal</div></div>
+          <span class="ex-sets" style="font-size:13px;">~3.850 kcal</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <span>Entrenador Personal · Claude</span>
+  <span>Dèficit objectiu: 7.000 kcal/setmana · Pèrdua: ~1 kg/setmana</span>
+</footer>
+
+<script>
+function showTab(group, id, btn) {
+  document.querySelectorAll('[id^="' + group + '-"]').forEach(function(p){ p.classList.remove('active'); });
+  btn.closest('.card').querySelectorAll('.tab-btn').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById(group + '-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>

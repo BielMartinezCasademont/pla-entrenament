@@ -356,16 +356,44 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-// ── STORAGE ──────────────────────────────────────────────────────────
-var STORE_KEY = 'biel_weight_log';
+// ── STORAGE (Firebase Realtime Database — sincronitzat entre dispositius) ──
+var firebaseConfig = {
+  apiKey: "AIzaSyB4qS3HAOnDtRtHsx93hwhqVkfzkd1EtAE",
+  authDomain: "resgistre-pes.firebaseapp.com",
+  databaseURL: "https://resgistre-pes-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "resgistre-pes",
+  storageBucket: "resgistre-pes.firebasestorage.app",
+  messagingSenderId: "667432975687",
+  appId: "1:667432975687:web:ea37c0e96be971f6396062"
+};
+firebase.initializeApp(firebaseConfig);
+var dbRef = firebase.database().ref('weightLog');
+
+var cachedData = {};
+var firebaseReady = false;
+
+// Escolta canvis en temps real: si guardes des del mòbil, l'ordinador
+// s'actualitza sol (i viceversa), sense recarregar la pàgina.
+dbRef.on('value', function(snapshot) {
+  cachedData = snapshot.val() || {};
+  firebaseReady = true;
+  updateLastWeight();
+  if (document.getElementById('chartModal').classList.contains('open')) {
+    renderChart();
+  }
+}, function(err) {
+  console.error('Error de connexió amb Firebase:', err);
+  alert('No s\'ha pogut connectar amb la base de dades. Comprova la connexió a internet.');
+});
 
 function loadData() {
-  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); }
-  catch(e) { return {}; }
+  return cachedData;
 }
 function saveData(d) {
-  localStorage.setItem(STORE_KEY, JSON.stringify(d));
+  // No s'utilitza directament; els desats es fan amb dbRef.child(...).set(...)
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────
@@ -379,7 +407,7 @@ function todayStr() {
 
 window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('weightDate').value = todayStr();
-  updateLastWeight();
+  // updateLastWeight() s'executa automàticament quan arriben les dades de Firebase
 });
 
 // ── SAVE WEIGHT ───────────────────────────────────────────────────────
@@ -390,13 +418,14 @@ function saveWeight() {
     alert('Introdueix un pes vàlid (entre 30 i 300 kg).');
     return;
   }
-  var data = loadData();
-  data[date] = kg;
-  saveData(data);
-  var msg = document.getElementById('savedMsg');
-  msg.style.opacity = '1';
-  setTimeout(function(){ msg.style.opacity = '0'; }, 2000);
-  updateLastWeight();
+  dbRef.child(date).set(kg).then(function() {
+    var msg = document.getElementById('savedMsg');
+    msg.style.opacity = '1';
+    setTimeout(function(){ msg.style.opacity = '0'; }, 2000);
+    // updateLastWeight() s'executa sol via el listener 'value'
+  }).catch(function(err) {
+    alert('Error en desar a la base de dades: ' + err.message);
+  });
 }
 
 function updateLastWeight() {

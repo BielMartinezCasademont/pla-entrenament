@@ -2,332 +2,278 @@
 <html lang="ca">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pla d'Entrenament Personal</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Pla d'Entrenament — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <style>
-  :root {
-    --bg: #0f0f0f; --surface: #181818; --surface2: #222222;
-    --border: #2a2a2a; --border2: #333; --text: #f0ede8; --muted: #888; --dim: #555;
-    --green: #a8d5a2; --green-bg: #1a2e1a; --green-border: #2d4a2d;
-    --blue: #a2c4d5; --blue-bg: #1a2530;
-    --amber: #d5c4a2; --amber-bg: #2e2a1a; --amber-border: #4a3a1a;
-    --red: #d5a2a2; --red-bg: #2e1a1a; --purple: #c4a2d5; --purple-bg: #251a2e; --purple-border: #3a2a45;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; padding: 2rem 1rem 4rem; }
-  .mono { font-family: 'DM Mono', monospace; }
-  header { max-width: 880px; margin: 0 auto 2.5rem; border-bottom: 1px solid var(--border2); padding-bottom: 1.5rem; }
-  .header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-  h1 { font-size: clamp(1.8rem,5vw,2.8rem); font-weight:800; letter-spacing:-0.03em; line-height:1.1; }
-  h1 span { color: var(--green); }
-  .header-meta { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); text-align:right; line-height:1.8; margin-top:4px; }
-  .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; margin-top:1.25rem; }
-  .stat { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; }
-  .stat-label { font-size:10px; color:var(--muted); font-family:'DM Mono',monospace; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.05em; }
-  .stat-val { font-size:18px; font-weight:700; }
-  .stat-val span { font-size:12px; font-weight:400; color:var(--muted); }
-  .stat.ok .stat-val { color: var(--green); }
-  .stat.warn .stat-val { color: var(--amber); }
-  .container { max-width:880px; margin:0 auto; }
-  section { margin-bottom:2rem; }
-  .section-label { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.75rem; display:flex; align-items:center; gap:8px; }
-  .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
-  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1.25rem; margin-bottom:10px; }
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --surface-alt:#f1f3f6;
+  --border:#e7e9ee; --text:#12151c; --muted:#6b7280; --dim:#9aa1ac;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);
+  --shadow-hover:0 8px 20px rgba(16,24,40,.10),0 2px 6px rgba(16,24,40,.06);
+  --radius:16px;
+  --gym:#16a34a; --gym-bg:#eafbf1; --gym-border:#bdeccd;
+  --pool:#0284c7; --pool-bg:#eaf7fd; --pool-border:#bfe6f7;
+  --rest:#64748b; --rest-bg:#f1f3f5; --rest-border:#dde1e6;
+  --accent:#7c3aed; --accent-bg:#f4eefe;
+  --danger:#dc2626; --danger-bg:#fdeeee;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;}
+.mono{font-family:'DM Mono',monospace;}
+img{max-width:100%;}
+button{font-family:inherit;cursor:pointer;}
 
-  /* WEIGHT TRACKER */
-  .weight-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .weight-date-input { background:var(--surface2); border:1px solid var(--border2); border-radius:6px; color:var(--text); font-family:'DM Mono',monospace; font-size:12px; padding:8px 10px; outline:none; }
-  .weight-date-input:focus { border-color:var(--green-border); }
-  .weight-kg-wrap { display:flex; align-items:center; gap:6px; background:var(--surface2); border:1px solid var(--border2); border-radius:6px; padding:6px 10px; }
-  .weight-kg-input { background:transparent; border:none; color:var(--text); font-family:'DM Mono',monospace; font-size:18px; font-weight:700; width:60px; outline:none; text-align:right; }
-  .weight-kg-input::-webkit-inner-spin-button { -webkit-appearance:none; }
-  .weight-kg-unit { font-family:'DM Mono',monospace; font-size:12px; color:var(--muted); }
-  .btn { font-family:'DM Mono',monospace; font-size:11px; padding:8px 14px; border-radius:6px; border:1px solid; cursor:pointer; font-weight:500; transition:all 0.15s; white-space:nowrap; }
-  .btn-green { background:var(--green-bg); color:var(--green); border-color:var(--green-border); }
-  .btn-green:hover { background:#243d24; }
-  .btn-blue { background:var(--blue-bg); color:var(--blue); border-color:#1a3040; }
-  .btn-blue:hover { background:#1e2e3a; }
-  .btn-ghost { background:transparent; color:var(--muted); border-color:var(--border2); }
-  .btn-ghost:hover { color:var(--text); border-color:var(--border); }
-  .weight-saved-msg { font-family:'DM Mono',monospace; font-size:11px; color:var(--green); opacity:0; transition:opacity 0.3s; }
-  .weight-last { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); margin-top:8px; }
-  .weight-last b { color:var(--text); }
+/* LAYOUT */
+.page-title{max-width:1140px;margin:0 auto;padding:26px 20px 4px;}
+.page-title h1{font-size:22px;font-weight:800;letter-spacing:-.02em;}
+.page-title .dot{width:8px;height:8px;border-radius:50%;background:var(--gym);display:inline-block;margin-right:8px;}
+.wrap{max-width:1140px;margin:0 auto;padding:12px 20px 60px;}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.section-head h2{font-size:20px;font-weight:800;letter-spacing:-.02em;}
+.section-head .sub{font-size:12.5px;color:var(--muted);}
+section{margin-bottom:44px;opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease;}
+section.in-view{opacity:1;transform:translateY(0);}
 
-  /* MODAL */
-  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:100; align-items:center; justify-content:center; padding:1rem; }
-  .modal-overlay.open { display:flex; }
-  .modal { background:var(--surface); border:1px solid var(--border2); border-radius:12px; width:100%; max-width:720px; max-height:90vh; overflow-y:auto; padding:1.5rem; }
-  .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; }
-  .modal-title { font-size:16px; font-weight:700; }
-  .modal-close { background:transparent; border:none; color:var(--muted); cursor:pointer; font-size:20px; line-height:1; padding:4px; }
-  .modal-close:hover { color:var(--text); }
-  .chart-toggle { display:flex; gap:6px; margin-bottom:1rem; }
-  .chart-toggle .btn { padding:5px 12px; }
-  .chart-toggle .btn.active { background:var(--green-bg); color:var(--green); border-color:var(--green-border); }
-  canvas#weightChart { width:100% !important; max-height:300px; }
+/* CARD BASE */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);transition:box-shadow .2s ease,transform .2s ease;}
+.card.hoverable:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px);}
 
-  /* WEEKLY STATS TABLE */
-  .week-stats-table { width:100%; border-collapse:collapse; margin-top:1rem; font-family:'DM Mono',monospace; font-size:11px; }
-  .week-stats-table th { color:var(--muted); font-weight:500; text-align:left; padding:6px 10px; border-bottom:1px solid var(--border2); }
-  .week-stats-table td { padding:6px 10px; border-bottom:1px solid var(--border); color:var(--text); }
-  .week-stats-table tr:last-child td { border-bottom:none; }
-  .td-green { color:var(--green); font-weight:600; }
-  .td-red { color:var(--red); }
-  .td-amber { color:var(--amber); }
+/* HERO (Resum) */
+.hero{background:linear-gradient(135deg,#0f172a,#1e2a44);border-radius:20px;padding:28px 26px;color:#fff;position:relative;overflow:hidden;margin-bottom:20px;}
+.hero::after{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.35),transparent 70%);}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;position:relative;z-index:1;}
+.hero-title{font-size:22px;font-weight:800;letter-spacing:-.02em;}
+.hero-title span{color:#86efac;}
+.hero-meta{font-family:'DM Mono',monospace;font-size:11px;color:#b7c0d1;text-align:right;line-height:1.9;}
+.hero-meta b{color:#fff;}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:12px;margin-top:18px;position:relative;z-index:1;}
+.stat-box{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 14px;}
+.stat-box .lbl{font-size:10px;color:#a9b3c4;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.stat-box .val{font-size:19px;font-weight:800;color:#fff;}
+.stat-box .val small{font-size:11px;font-weight:500;color:#a9b3c4;}
 
-  /* EMPTY STATE */
-  .empty-chart { display:flex; align-items:center; justify-content:center; height:200px; font-family:'DM Mono',monospace; font-size:12px; color:var(--dim); border:1px dashed var(--border2); border-radius:8px; }
+/* CALORIE BALANCE */
+.balance-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:18px;}
+.balance-item{text-align:center;padding:12px;border-radius:12px;background:var(--surface-alt);}
+.balance-item .b-lbl{font-size:10.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:6px;}
+.balance-item .b-val{font-size:21px;font-weight:800;}
+.balance-item .b-sub{font-size:10px;color:var(--dim);margin-top:2px;font-family:'DM Mono',monospace;}
+.g{color:var(--gym);} .p{color:var(--pool);} .r{color:var(--rest);} .a{color:var(--accent);} .d{color:var(--danger);}
+.deficit-bar{height:10px;border-radius:6px;background:var(--border);overflow:hidden;margin:4px 18px 2px;position:relative;}
+.deficit-fill{height:100%;background:linear-gradient(90deg,#16a34a,#ea580c 70%,#dc2626);width:0%;transition:width 1.2s cubic-bezier(.22,.9,.34,1);}
+.note{background:var(--surface-alt);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--muted);margin:0 18px 18px;line-height:1.7;}
+.note b{color:var(--text);}
+@media (max-width:820px){.balance-grid{grid-template-columns:1fr;}}
 
-  /* BALANCE */
-  .balance-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
-  .balance-item { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center; }
-  .balance-item .b-label { font-size:10px; font-family:'DM Mono',monospace; color:var(--muted); margin-bottom:6px; }
-  .balance-item .b-val { font-size:22px; font-weight:800; }
-  .balance-item .b-sub { font-size:10px; color:var(--muted); margin-top:3px; font-family:'DM Mono',monospace; }
-  .balance-item.green .b-val { color:var(--green); }
-  .balance-item.amber .b-val { color:var(--amber); }
-  .balance-item.red .b-val { color:var(--red); }
-  .deficit-bar { height:12px; border-radius:6px; background:var(--border); overflow:hidden; margin:8px 0 4px; position:relative; }
-  .deficit-fill { height:100%; background: linear-gradient(90deg, var(--green) 0%, var(--amber) 70%, var(--red) 100%); }
-  .deficit-needle { position:absolute; top:-2px; height:16px; width:2px; background:white; border-radius:1px; transform:translateX(-50%); }
-  .deficit-labels { display:flex; justify-content:space-between; font-size:9px; font-family:'DM Mono',monospace; color:var(--muted); }
+/* GOALS */
+.goal-list{display:flex;flex-direction:column;gap:16px;padding:18px;}
+.goal-item .goal-top{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;}
+.goal-item .goal-top .pct{font-family:'DM Mono',monospace;color:var(--accent);}
+.goal-track{height:12px;background:var(--surface-alt);border-radius:8px;overflow:hidden;}
+.goal-fill{height:100%;width:0%;background:linear-gradient(90deg,#7c3aed,#a78bfa);border-radius:8px;transition:width 1.4s cubic-bezier(.22,.9,.34,1);}
+.goal-fill.done{background:linear-gradient(90deg,#16a34a,#4ade80);}
+.goal-sub{font-size:11px;color:var(--dim);margin-top:5px;font-family:'DM Mono',monospace;}
 
-  /* WEEK GRID */
-  .week-grid { display:flex; flex-direction:column; gap:6px; }
-  .week-row { display:grid; grid-template-columns:100px 1fr auto; align-items:start; gap:10px; padding:12px 14px; border-radius:8px; border:1px solid var(--border); }
-  .week-row.gym    { border-color:var(--green-border); background:var(--green-bg); }
-  .week-row.pool   { border-color:#1a3040; background:#111c25; }
-  .week-row.combo  { border-color:var(--amber-border); background:var(--amber-bg); }
-  .week-row.rest   { background:var(--surface2); }
-  .week-day { font-size:12px; font-weight:700; color:var(--text); font-family:'DM Mono',monospace; }
-  .week-type { font-size:10px; font-weight:500; margin-top:2px; }
-  .week-row.gym   .week-type { color:var(--green); }
-  .week-row.pool  .week-type { color:var(--blue); }
-  .week-row.combo .week-type { color:var(--amber); }
-  .week-row.rest  .week-type { color:var(--muted); }
-  .blocks { display:flex; flex-wrap:wrap; gap:5px; align-items:center; }
-  .bl { font-size:11px; font-family:'DM Mono',monospace; padding:3px 8px; border-radius:4px; white-space:nowrap; }
-  .bl-work { background:#1a1a1a; color:var(--muted); border:1px solid var(--border); }
-  .bl-gym  { background:var(--green-bg); color:var(--green); border:1px solid var(--green-border); font-weight:500; }
-  .bl-pool { background:#111c25; color:var(--blue); border:1px solid #1a3040; font-weight:500; }
-  .bl-combo{ background:var(--amber-bg); color:var(--amber); border:1px solid var(--amber-border); font-weight:500; }
-  .bl-rest { background:#1a1a1a; color:var(--dim); border:1px solid var(--border); }
-  .bl-walk { background:#1c1c1a; color:#b5b098; border:1px solid #333; }
-  .kcal-badge { font-size:11px; font-family:'DM Mono',monospace; color:var(--green); background:var(--green-bg); border:1px solid var(--green-border); border-radius:4px; padding:3px 8px; white-space:nowrap; }
-  .kcal-badge.dim { color:var(--muted); background:var(--surface2); border-color:var(--border); }
+/* PREDICTION */
+.pred-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:18px;}
+.pred-box{background:var(--surface-alt);border-radius:12px;padding:13px;text-align:center;}
+.pred-box .p-lbl{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:5px;}
+.pred-box .p-val{font-size:15px;font-weight:800;}
+.pred-box .p-sub{font-size:10px;color:var(--dim);margin-top:2px;}
+@media (max-width:820px){.pred-grid{grid-template-columns:repeat(2,1fr);}}
 
-  /* TABS */
-  .tabs { display:flex; gap:6px; margin-bottom:1rem; flex-wrap:wrap; }
-  .tab-btn { font-size:11px; font-family:'DM Mono',monospace; padding:5px 12px; border-radius:4px; border:1px solid var(--border2); background:transparent; color:var(--muted); cursor:pointer; transition:all 0.15s; }
-  .tab-btn:hover { border-color:var(--green-border); color:var(--green); }
-  .tab-btn.active { background:var(--green-bg); color:var(--green); border-color:var(--green-border); font-weight:500; }
-  .tab-btn.pool-btn:hover { border-color:#1a3040; color:var(--blue); }
-  .tab-btn.pool-btn.active { background:#111c25; color:var(--blue); border-color:#1a3040; }
-  .tab-panel { display:none; }
-  .tab-panel.active { display:block; }
-  .dur-tag { display:inline-block; font-size:10px; font-family:'DM Mono',monospace; padding:3px 10px; background:var(--green-bg); color:var(--green); border:1px solid var(--green-border); border-radius:4px; margin-bottom:12px; }
-  .dur-tag.pool { background:#111c25; color:var(--blue); border-color:#1a3040; }
+/* ADVANCED STATS */
+.adv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden;margin:18px;}
+.adv-cell{background:var(--surface);padding:14px;}
+.adv-cell .a-lbl{font-size:10.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:4px;}
+.adv-cell .a-val{font-size:16px;font-weight:800;}
+@media (max-width:820px){.adv-grid{grid-template-columns:1fr 1fr;}}
+@media (max-width:520px){.adv-grid{grid-template-columns:1fr;}}
 
-  .ex-list { display:flex; flex-direction:column; }
-  .ex-item { display:grid; grid-template-columns:24px 64px 1fr auto; gap:10px; align-items:center; padding:9px 0; border-bottom:1px solid var(--border); }
-  .ex-item:last-child { border-bottom:none; }
-  .ex-num { font-size:10px; font-family:'DM Mono',monospace; color:var(--dim); align-self:start; padding-top:2px; }
-  .ex-img { width:64px; height:52px; object-fit:cover; border-radius:6px; border:1px solid var(--border2); background:var(--surface2); display:block; flex-shrink:0; }
-  .ex-img-placeholder { width:64px; height:52px; border-radius:6px; border:1px dashed var(--border2); background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:9px; font-family:'DM Mono',monospace; color:var(--dim); text-align:center; line-height:1.3; padding:4px; flex-shrink:0; }
-  .ex-name { font-size:13px; color:var(--text); font-weight:600; }
-  .ex-tip { font-size:11px; color:var(--muted); margin-top:2px; font-weight:400; }
-  .ex-sets { font-size:11px; font-family:'DM Mono',monospace; color:var(--green); text-align:right; white-space:nowrap; align-self:start; padding-top:2px; }
-  .ex-sets.blue { color:var(--blue); }
-  .note-box { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px 14px; font-size:12px; color:var(--muted); font-family:'DM Mono',monospace; margin-top:12px; line-height:1.7; }
-  .note-box b { color:var(--text); font-weight:600; }
+/* CALENDAR */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;padding:18px;}
+.cal-day{border-radius:12px;padding:12px 10px;border:1px solid var(--border);cursor:pointer;transition:all .18s;text-align:center;position:relative;}
+.cal-day:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover);}
+.cal-day.gym{background:var(--gym-bg);border-color:var(--gym-border);}
+.cal-day.pool{background:var(--pool-bg);border-color:var(--pool-border);}
+.cal-day.rest{background:var(--rest-bg);border-color:var(--rest-border);}
+.cal-day.selected{outline:2.5px solid var(--text);outline-offset:2px;}
+.cal-day .cd-name{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);}
+.cal-day .cd-date{font-size:10px;color:var(--dim);font-family:'DM Mono',monospace;margin-bottom:6px;}
+.cal-day .cd-icon{font-size:22px;margin:4px 0;}
+.cal-day .cd-title{font-size:11px;font-weight:600;line-height:1.3;min-height:28px;}
+.cal-day .cd-kcal{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);margin-top:4px;}
+@media (max-width:820px){.cal-grid{grid-template-columns:repeat(4,1fr);}}
+@media (max-width:520px){.cal-grid{grid-template-columns:repeat(2,1fr);}}
 
-  footer { max-width:880px; margin:2rem auto 0; padding-top:1.5rem; border-top:1px solid var(--border); font-size:11px; font-family:'DM Mono',monospace; color:var(--dim); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
-  @media (max-width:600px) {
-    .week-row { grid-template-columns:80px 1fr; }
-    .kcal-badge { display:none; }
-    .balance-grid { grid-template-columns:1fr 1fr; }
-    .ex-item { grid-template-columns:18px 44px 1fr auto; gap:8px; }
-    .ex-img, .ex-img-placeholder { width:44px; height:36px; font-size:8px; }
-    .ex-name { font-size:12px; }
-    .ex-tip { font-size:10px; }
-    .ex-sets { display:block; font-size:10px; text-align:right; white-space:normal; }
-  }
+.dur-tag{display:inline-flex;gap:6px;align-items:center;font-size:11px;font-family:'DM Mono',monospace;padding:5px 12px;border-radius:20px;margin-bottom:14px;font-weight:600;}
+.dur-tag.gym{background:var(--gym-bg);color:var(--gym);}
+.dur-tag.pool{background:var(--pool-bg);color:var(--pool);}
+
+/* EXERCISE CARDS */
+.ex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+.ex-card{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--surface);transition:all .2s;display:flex;flex-direction:column;}
+.ex-card:hover{box-shadow:var(--shadow-hover);transform:translateY(-3px);}
+.ex-media{padding:10px 10px 0;}
+.ex-img{width:100%;height:110px;object-fit:cover;border-radius:9px;cursor:zoom-in;background:var(--surface-alt);}
+.ex-img-ph{width:100%;height:110px;border-radius:9px;border:1.5px dashed var(--border);background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'DM Mono',monospace;color:var(--dim);text-align:center;line-height:1.3;padding:4px;cursor:pointer;}
+.ex-body{padding:10px 12px 12px;flex:1;display:flex;flex-direction:column;}
+.ex-head{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.ex-idx{font-size:9px;color:var(--dim);font-family:'DM Mono',monospace;}
+.ex-head h4{font-size:13px;font-weight:700;flex:1;}
+.ex-sets{font-size:10.5px;font-family:'DM Mono',monospace;color:var(--gym);font-weight:700;white-space:nowrap;}
+.ex-tip{font-size:11px;color:var(--muted);line-height:1.5;}
+
+/* WEIGHT INPUT */
+.weight-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:18px;}
+.inp{background:var(--surface-alt);border:1.5px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;padding:9px 11px;outline:none;transition:border .15s;}
+.inp:focus{border-color:var(--accent);}
+.kg-wrap{display:flex;align-items:center;gap:6px;background:var(--surface-alt);border:1.5px solid var(--border);border-radius:9px;padding:6px 12px;}
+.kg-wrap input{background:transparent;border:none;font-family:'DM Mono',monospace;font-size:18px;font-weight:800;width:64px;outline:none;}
+.btn{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;padding:9px 16px;border-radius:9px;border:1.5px solid transparent;transition:all .15s;}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--gym);color:#fff;}
+.btn-primary:hover{background:#128a3e;}
+.btn-outline{background:var(--surface);color:var(--text);border-color:var(--border);}
+.btn-outline:hover{border-color:var(--dim);}
+.btn-danger-ghost{background:transparent;color:var(--danger);border-color:var(--danger-bg);}
+.btn-danger-ghost:hover{background:var(--danger-bg);}
+.saved-msg{font-size:12px;font-weight:700;color:var(--gym);opacity:0;transition:opacity .3s;}
+.last-weight{padding:0 18px 16px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;}
+.last-weight b{color:var(--text);}
+
+/* HISTORY TABLE */
+.hist-wrap{overflow-x:auto;padding:0 18px 18px;}
+table.hist{width:100%;border-collapse:collapse;font-size:12.5px;}
+table.hist th{text-align:left;padding:8px 10px;color:var(--muted);font-weight:700;font-size:11px;border-bottom:2px solid var(--border);white-space:nowrap;}
+table.hist td{padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
+table.hist tr:hover td{background:var(--surface-alt);}
+.row-actions button{background:none;border:none;font-size:13px;padding:3px 6px;border-radius:6px;color:var(--muted);}
+.row-actions button:hover{background:var(--surface-alt);color:var(--text);}
+
+/* CHART */
+.chart-controls{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:18px 18px 0;}
+.seg{display:flex;gap:4px;background:var(--surface-alt);padding:4px;border-radius:10px;}
+.seg button{font-size:11.5px;font-weight:700;padding:6px 12px;border-radius:7px;background:transparent;border:none;color:var(--muted);}
+.seg button.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow);}
+.chart-box{padding:16px 18px 18px;}
+canvas#weightChart{width:100% !important;max-height:320px;}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;color:var(--dim);font-size:13px;gap:6px;}
+
+/* LIGHTBOX */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(2px);z-index:200;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;animation:fadeIn .18s ease;}
+.modal-box{background:var(--surface);border-radius:18px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal-close{float:right;background:var(--surface-alt);border:none;width:30px;height:30px;border-radius:50%;font-size:15px;color:var(--muted);}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.lightbox-img{max-width:100%;max-height:70vh;border-radius:12px;display:block;margin:0 auto;}
+
+footer{max-width:1140px;margin:0 auto;padding:24px 20px 50px;font-size:11.5px;color:var(--dim);font-family:'DM Mono',monospace;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;border-top:1px solid var(--border);}
+
+@media (max-width:600px){ .hero-meta{display:none;} }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="header-top">
-    <h1>Pla<br><span>Entrenament</span><br>Personal</h1>
-    <div class="header-meta">
-      Objectiu: 75 kg<br>
-      Pes inicial: 91 kg<br>
-      A perdre: 16 kg<br>
-      Horari feina: 8:00–16:30
+<div class="page-title"><h1><span class="dot"></span>Pla Fitness</h1></div>
+
+<div class="wrap">
+
+  <!-- 1. PLA SETMANAL -->
+  <section id="pla-setmanal">
+    <div class="section-head"><h2>Pla setmanal</h2><span class="sub">Clica un dia per veure el programa a sota</span></div>
+    <div class="card">
+      <div class="cal-grid" id="calGrid"></div>
     </div>
-  </div>
-  <div class="stats-row">
-    <div class="stat ok"><div class="stat-label">Cal. cremades/setm.</div><div class="stat-val">15.276 <span>kcal</span></div></div>
-    <div class="stat warn"><div class="stat-label">Ingesta alim./setm.</div><div class="stat-val">~13.125 <span>kcal</span></div></div>
-    <div class="stat ok"><div class="stat-label">Dèficit base dieta</div><div class="stat-val">~2.150 <span>kcal</span></div></div>
-    <div class="stat warn"><div class="stat-label">Kcal exercici extra</div><div class="stat-val">~4.850 <span>kcal</span></div></div>
-    <div class="stat ok"><div class="stat-label">Dèficit total objectiu</div><div class="stat-val">7.000 <span>kcal/s</span></div></div>
-  </div>
-</header>
+    <div id="dayDetailWrap" style="margin-top:12px;"></div>
+  </section>
 
-<div class="container">
+  <!-- 2. GRAFICA -->
+  <section id="grafica">
+    <div class="section-head"><h2>Gràfica d'evolució</h2><span class="sub">Real · tendència · predicció · mitjana mòbil</span></div>
+    <div class="card">
+      <div class="chart-controls">
+        <div class="seg" id="rangeSeg">
+          <button data-range="30" class="active">1 mes</button>
+          <button data-range="90">3 mesos</button>
+          <button data-range="all">Tot</button>
+        </div>
+        <div class="seg" id="viewSeg">
+          <button data-view="diari" class="active">Diari</button>
+          <button data-view="setmanal">Setmanal</button>
+        </div>
+      </div>
+      <div class="chart-box">
+        <canvas id="weightChart"></canvas>
+        <div class="empty-state" id="emptyChart" style="display:none;">📉 Encara no hi ha dades de pes registrades.</div>
+        <div id="weekTableWrap"></div>
+      </div>
+    </div>
+  </section>
 
-  <!-- REGISTRE DE PES -->
-  <section>
-    <div class="section-label">Registre de pes diari</div>
+  <!-- 3. REGISTRE DE PES -->
+  <section id="registre-pes">
+    <div class="section-head"><h2>Registre de pes</h2><span class="sub">El pes d'avui surt predeterminat</span></div>
     <div class="card">
       <div class="weight-row">
-        <input type="date" id="weightDate" class="weight-date-input">
-        <div class="weight-kg-wrap">
-          <input type="number" id="weightKg" class="weight-kg-input" step="0.1" min="30" max="300" placeholder="91.0">
-          <span class="weight-kg-unit">kg</span>
-        </div>
-        <button class="btn btn-green" onclick="saveWeight()">Desar pes</button>
-        <button class="btn btn-blue" onclick="openChart()">📊 Gràfica</button>
-        <span class="weight-saved-msg" id="savedMsg">✓ Desat!</span>
+        <input type="date" id="weightDate" class="inp">
+        <div class="kg-wrap"><input type="number" id="weightKg" step="0.1" min="30" max="300" placeholder="91.0"><span class="mono" style="font-size:12px;color:var(--muted)">kg</span></div>
+        <button class="btn btn-primary" onclick="saveWeight()">Desar pes</button>
+        <span class="saved-msg" id="savedMsg">✓ Desat!</span>
       </div>
-      <div class="weight-last" id="weightLast"></div>
+      <div class="last-weight" id="weightLast"></div>
+      <div class="section-head" style="padding:0 18px;"><h2 style="font-size:14px;">Historial</h2>
+        <button class="btn btn-danger-ghost" onclick="resetAllData()" style="font-size:11px;padding:5px 10px;">Esborrar tot</button>
+      </div>
+      <div class="hist-wrap">
+        <table class="hist">
+          <thead><tr><th>Data</th><th>Pes</th><th>vs dia anterior</th><th>vs inici</th><th></th></tr></thead>
+          <tbody id="histBody"></tbody>
+        </table>
+      </div>
     </div>
   </section>
 
-  <!-- BALANÇ CALÒRIC -->
-  <section>
-    <div class="section-label">Balanç calòric setmanal</div>
+  <!-- 4. OBJECTIUS I PREDICCIO -->
+  <section id="objectius">
+    <div class="section-head"><h2>Objectius i predicció</h2><span class="sub">Basat en la teva tendència real de pèrdua</span></div>
+    <div class="card">
+      <div class="goal-list" id="goalList"></div>
+    </div>
+    <div class="card" style="margin-top:12px;">
+      <div class="section-head" style="padding:16px 18px 0;"><h2 style="font-size:15px;">Predicció automàtica</h2></div>
+      <div class="pred-grid" id="predGrid"></div>
+    </div>
+    <div class="card" style="margin-top:12px;">
+      <div class="section-head" style="padding:16px 18px 0;"><h2 style="font-size:15px;">Estadístiques avançades</h2></div>
+      <div class="adv-grid" id="advGrid"></div>
+    </div>
+  </section>
+
+  <!-- 5. RESUM -->
+  <section id="resum">
+    <div class="hero">
+      <div class="hero-top">
+        <div class="hero-title">Pla <span>Entrenament</span> Personal</div>
+        <div class="hero-meta">Horari feina: <b>8:00–16:30</b><br>Dilluns a Divendres</div>
+      </div>
+      <div class="stat-grid" id="dashStats"></div>
+    </div>
+    <div class="section-head"><h2>Balanç calòric setmanal</h2><span class="sub">Dèficit objectiu: 7.000 kcal/setmana</span></div>
     <div class="card">
       <div class="balance-grid">
-        <div class="balance-item green"><div class="b-label">Cremat (metabolisme + exercici)</div><div class="b-val">~20.126</div><div class="b-sub">kcal setmanals</div></div>
-        <div class="balance-item amber"><div class="b-label">Ingerit (alimentació)</div><div class="b-val">~13.125</div><div class="b-sub">kcal setmanals</div></div>
-        <div class="balance-item red"><div class="b-label">Dèficit total</div><div class="b-val">~7.000</div><div class="b-sub">kcal → ~1 kg greix/s</div></div>
+        <div class="balance-item"><div class="b-lbl">CREMAT (metabolisme+exercici)</div><div class="b-val g">~20.126</div><div class="b-sub">kcal/setmana</div></div>
+        <div class="balance-item"><div class="b-lbl">INGERIT (alimentació)</div><div class="b-val" style="color:#ea580c;">~13.125</div><div class="b-sub">kcal/setmana</div></div>
+        <div class="balance-item"><div class="b-lbl">DÈFICIT TOTAL</div><div class="b-val d">~7.000</div><div class="b-sub">→ ~1 kg greix/setmana</div></div>
       </div>
-      <div class="deficit-bar"><div class="deficit-fill" style="width:100%;"></div><div class="deficit-needle" style="left:65.3%;"></div></div>
-      <div class="deficit-labels"><span>0 kcal dèficit</span><span style="color:var(--amber);">↑ Posició actual (7.000)</span><span>10.000+ kcal</span></div>
-      <div class="note-box" style="margin-top:12px;"><b>Important:</b> Un dèficit de 1 kg/setmana és al límit del recomanat. Si et sents molt fatigat o passes gana extrema, puja a 1.900–2.000 kcal/dia i accepta perdre 0,75 kg/setmana. La constància bat la urgència.</div>
-    </div>
-  </section>
-
-  <!-- SETMANA -->
-  <section>
-    <div class="section-label">Distribució setmanal d'exercici</div>
-    <div class="card">
-      <div class="week-grid">
-        <div class="week-row combo"><div><div class="week-day">Dilluns</div><div class="week-type">Gimnas — Tren superior</div></div><div class="blocks"><span class="bl bl-work">8:00–16:30 Feina</span><span class="bl bl-combo">17:00–18:15 Gimnas (75 min)</span></div><span class="kcal-badge">~550 kcal</span></div>
-        <div class="week-row pool"><div><div class="week-day">Dimarts</div><div class="week-type">Piscina — Cardio i resistència</div></div><div class="blocks"><span class="bl bl-work">8:00–16:30 Feina</span><span class="bl bl-pool">17:00–17:45 Piscina (45 min)</span></div><span class="kcal-badge">~600 kcal</span></div>
-        <div class="week-row gym"><div><div class="week-day">Dimecres</div><div class="week-type">Gimnas — Tren inferior</div></div><div class="blocks"><span class="bl bl-work">8:00–16:30 Feina</span><span class="bl bl-gym">17:00–18:15 Gimnas (75 min)</span></div><span class="kcal-badge">~500 kcal</span></div>
-        <div class="week-row pool"><div><div class="week-day">Dijous</div><div class="week-type">Piscina — Intervals (HIIT aquàtic)</div></div><div class="blocks"><span class="bl bl-work">8:00–16:30 Feina</span><span class="bl bl-pool">17:00–17:45 Piscina (45 min)</span></div><span class="kcal-badge">~650 kcal</span></div>
-        <div class="week-row combo"><div><div class="week-day">Divendres</div><div class="week-type">Gimnas — Full body + Cardio</div></div><div class="blocks"><span class="bl bl-work">8:00–16:30 Feina</span><span class="bl bl-combo">17:00–18:30 Gimnas (90 min)</span></div><span class="kcal-badge">~700 kcal</span></div>
-        <div class="week-row pool"><div><div class="week-day">Dissabte</div><div class="week-type">Piscina — Sessió llarga (tarda)</div></div><div class="blocks"><span class="bl bl-rest">Despertar tard (dinar)</span><span class="bl bl-pool">15:00–16:00 Piscina (60 min)</span><span class="bl bl-walk">Passejada opcional</span></div><span class="kcal-badge">~750 kcal</span></div>
-        <div class="week-row rest"><div><div class="week-day">Diumenge</div><div class="week-type">Descans actiu</div></div><div class="blocks"><span class="bl bl-rest">Despertar tard (dinar)</span><span class="bl bl-walk">Passejada 45–60 min</span></div><span class="kcal-badge dim">~100 kcal</span></div>
-      </div>
-      <div class="note-box"><b>Total exercici extra:</b> ~3.750 kcal d'exercici dirigit + ~1.100 kcal d'activitat base (caminar feina, NEAT) = ~4.850 kcal · <b>Dèficit total aconseguit:</b> 2.150 (dieta) + 4.850 (exercici) = <span style="color:var(--green);">~7.000 kcal ✓</span></div>
-    </div>
-  </section>
-
-  <!-- PROGRAMA GIMNAS -->
-  <section>
-    <div class="section-label">Programa de gimnas (3 sessions)</div>
-    <div class="card">
-      <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('gym','dl',this)">Dilluns — Tren superior</button>
-        <button class="tab-btn" onclick="showTab('gym','dc',this)">Dimecres — Tren inferior</button>
-        <button class="tab-btn" onclick="showTab('gym','dv',this)">Divendres — Full body</button>
-      </div>
-
-      <div id="gym-dl" class="tab-panel active">
-        <div class="dur-tag">75 min · inclou 15 min cardio final</div>
-        <div class="ex-list">
-          <div class="ex-item"><span class="ex-num">0</span><img class="ex-img" src="escalfament_cinta.jpg" alt="Escalfament" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>escalfament_<br>cinta.jpg</div>'"><div><div class="ex-name">Escalfament cinta o bici</div><div class="ex-tip">Ritme suau, pols a 120–130 ppm</div></div><span class="ex-sets">8 min</span></div>
-          <div class="ex-item"><span class="ex-num">1</span><img class="ex-img" src="press_banca.jpg" alt="Press de banca" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>press_<br>banca.jpg</div>'"><div><div class="ex-name">Press de banca amb barra</div><div class="ex-tip">Descans 90 seg entre sèries</div></div><span class="ex-sets">4 × 8–10</span></div>
-          <div class="ex-item"><span class="ex-num">2</span><img class="ex-img" src="lat_pulldown.jpg" alt="Lat pulldown" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>lat_<br>pulldown.jpg</div>'"><div><div class="ex-name">Lat pulldown o dominades assistides</div><div class="ex-tip">Agafada ampla, baixa fins la barbeta</div></div><span class="ex-sets">4 × 10</span></div>
-          <div class="ex-item"><span class="ex-num">3</span><img class="ex-img" src="press_militar.jpg" alt="Press militar" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>press_<br>militar.jpg</div>'"><div><div class="ex-name">Press militar amb mancuernes</div><div class="ex-tip">Assegut, colzes a 90°</div></div><span class="ex-sets">3 × 10</span></div>
-          <div class="ex-item"><span class="ex-num">4</span><img class="ex-img" src="cable_row.jpg" alt="Cable row" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>cable_<br>row.jpg</div>'"><div><div class="ex-name">Rem en politja baixa (cable row)</div><div class="ex-tip">Esquena recta, apreta l'escàpula</div></div><span class="ex-sets">3 × 12</span></div>
-          <div class="ex-item"><span class="ex-num">5</span><img class="ex-img" src="curls_biceps.jpg" alt="Cúrls bíceps" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>curls_<br>biceps.jpg</div>'"><div><div class="ex-name">Cúrls de bíceps alternats</div><div class="ex-tip">Sense balanceig del tronc</div></div><span class="ex-sets">3 × 12</span></div>
-          <div class="ex-item"><span class="ex-num">6</span><img class="ex-img" src="triceps_politja.jpg" alt="Tríceps politja" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>triceps_<br>politja.jpg</div>'"><div><div class="ex-name">Extensió de tríceps en politja</div><div class="ex-tip">Colzes fixes, empenta cap avall</div></div><span class="ex-sets">3 × 12</span></div>
-          <div class="ex-item"><span class="ex-num">7</span><img class="ex-img" src="cardio_cinta.jpg" alt="Cardio cinta" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>cardio_<br>cinta.jpg</div>'"><div><div class="ex-name">Cardio final — cinta inclinada</div><div class="ex-tip">Inclinació 6–8%, ritme constant per cremar kcal</div></div><span class="ex-sets">15 min</span></div>
-        </div>
-      </div>
-
-      <div id="gym-dc" class="tab-panel">
-        <div class="dur-tag">75 min · inclou 15 min cardio final</div>
-        <div class="ex-list">
-          <div class="ex-item"><span class="ex-num">0</span><img class="ex-img" src="escalfament_cinta.jpg" alt="Escalfament" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>escalfament_<br>cinta.jpg</div>'"><div><div class="ex-name">Escalfament cinta o bici</div><div class="ex-tip">Ritme suau, activació articular</div></div><span class="ex-sets">8 min</span></div>
-          <div class="ex-item"><span class="ex-num">1</span><img class="ex-img" src="sentadilles.jpg" alt="Sentadilles" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>sentadilles<br>.jpg</div>'"><div><div class="ex-name">Sentadilles amb barra</div><div class="ex-tip">Baixa fins paral·lel, genolls sobre puntes</div></div><span class="ex-sets">4 × 8–10</span></div>
-          <div class="ex-item"><span class="ex-num">2</span><img class="ex-img" src="pes_mort.jpg" alt="Pes mort" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>pes_mort<br>.jpg</div>'"><div><div class="ex-name">Pes mort romanès</div><div class="ex-tip">Esquena neutra, nota els isquiotibials</div></div><span class="ex-sets">3 × 10</span></div>
-          <div class="ex-item"><span class="ex-num">3</span><img class="ex-img" src="extensio_quadriceps.jpg" alt="Extensió quàdriceps" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>extensio_<br>quadriceps.jpg</div>'"><div><div class="ex-name">Extensió de quàdriceps a la màquina</div><div class="ex-tip">Moviment controlat a la baixada</div></div><span class="ex-sets">3 × 12</span></div>
-          <div class="ex-item"><span class="ex-num">4</span><img class="ex-img" src="curl_femoral.jpg" alt="Curl femoral" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>curl_<br>femoral.jpg</div>'"><div><div class="ex-name">Curl femoral estirat</div><div class="ex-tip">Peus en flexió, apreta gluti</div></div><span class="ex-sets">3 × 12</span></div>
-          <div class="ex-item"><span class="ex-num">5</span><img class="ex-img" src="hip_thrust.jpg" alt="Hip thrust" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>hip_thrust<br>.jpg</div>'"><div><div class="ex-name">Hip thrust amb barra</div><div class="ex-tip">Espatlles al banc, apreta gluti dalt</div></div><span class="ex-sets">3 × 12</span></div>
-          <div class="ex-item"><span class="ex-num">6</span><img class="ex-img" src="bessons.jpg" alt="Bessons" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>bessons<br>.jpg</div>'"><div><div class="ex-name">Elevació de bessons dret</div><div class="ex-tip">Control a la baixada, rang complet</div></div><span class="ex-sets">3 × 15</span></div>
-          <div class="ex-item"><span class="ex-num">7</span><img class="ex-img" src="cardio_cinta.jpg" alt="Cardio cinta" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>cardio_<br>cinta.jpg</div>'"><div><div class="ex-name">Cardio final — cinta inclinada</div><div class="ex-tip">Inclinació 6–8%, caminar a bon ritme</div></div><span class="ex-sets">15 min</span></div>
-        </div>
-      </div>
-
-      <div id="gym-dv" class="tab-panel">
-        <div class="dur-tag">90 min · sessió més llarga, inclou 20 min cardio final</div>
-        <div class="ex-list">
-          <div class="ex-item"><span class="ex-num">0</span><img class="ex-img" src="escalfament_cinta.jpg" alt="Escalfament" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>escalfament_<br>cinta.jpg</div>'"><div><div class="ex-name">Escalfament cinta o bici</div><div class="ex-tip">Ritme moderat, pols a 130–140 ppm</div></div><span class="ex-sets">8 min</span></div>
-          <div class="ex-item"><span class="ex-num">1</span><img class="ex-img" src="sentadilla_goblet.jpg" alt="Sentadilla goblet" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>sentadilla_<br>goblet.jpg</div>'"><div><div class="ex-name">Sentadilla goblet amb mancuerna</div><div class="ex-tip">Mancuerna al pit, esquena recta</div></div><span class="ex-sets">3 × 12</span></div>
-          <div class="ex-item"><span class="ex-num">2</span><img class="ex-img" src="press_inclinat.jpg" alt="Press inclinat" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>press_<br>inclinat.jpg</div>'"><div><div class="ex-name">Press de banca inclinat</div><div class="ex-tip">Banc 30–45°, treball pectoral alt</div></div><span class="ex-sets">3 × 10</span></div>
-          <div class="ex-item"><span class="ex-num">3</span><img class="ex-img" src="rem_mancuerna.jpg" alt="Rem mancuerna" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>rem_<br>mancuerna.jpg</div>'"><div><div class="ex-name">Rem amb mancuerna unilateral</div><div class="ex-tip">Genoll al banc, esquena paral·lela</div></div><span class="ex-sets">3 × 10</span></div>
-          <div class="ex-item"><span class="ex-num">4</span><img class="ex-img" src="estocades.jpg" alt="Estocades" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>estocades<br>.jpg</div>'"><div><div class="ex-name">Estocades amb mancuernes</div><div class="ex-tip">Pas llarg, genoll davanter no passa el peu</div></div><span class="ex-sets">3 × 10 c/u</span></div>
-          <div class="ex-item"><span class="ex-num">5</span><img class="ex-img" src="flexions.jpg" alt="Flexions" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>flexions<br>.jpg</div>'"><div><div class="ex-name">Flexions (push-ups)</div><div class="ex-tip">Pit toca el terra, cos completament recte</div></div><span class="ex-sets">3 × màxim</span></div>
-          <div class="ex-item"><span class="ex-num">6</span><img class="ex-img" src="planxa_lateral.jpg" alt="Planxa lateral" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>planxa_<br>lateral.jpg</div>'"><div><div class="ex-name">Planxa lateral alternada</div><div class="ex-tip">30 seg cada costat</div></div><span class="ex-sets">3 × 30 seg</span></div>
-          <div class="ex-item"><span class="ex-num">7</span><img class="ex-img" src="cardio_elliptica.jpg" alt="Cardio el·líptica" onerror="this.outerHTML='<div class=\'ex-img-placeholder\'>cardio_<br>elliptica.jpg</div>'"><div><div class="ex-name">Cardio final — cinta, bici o el·líptica</div><div class="ex-tip">Intensitat moderada-alta, zona grassa</div></div><span class="ex-sets">20 min</span></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- PROGRAMA PISCINA -->
-  <section>
-    <div class="section-label">Programa de piscina (3 sessions) — 10 m × 5 m</div>
-    <div class="card">
-      <div class="tabs">
-        <button class="tab-btn pool-btn active" onclick="showTab('pool','dm',this)">Dimarts — Cardio base</button>
-        <button class="tab-btn pool-btn" onclick="showTab('pool','dj',this)">Dijous — HIIT aquàtic</button>
-        <button class="tab-btn pool-btn" onclick="showTab('pool','ds',this)">Dissabte — Sessió llarga</button>
-      </div>
-
-      <div id="pool-dm" class="tab-panel active">
-        <div class="dur-tag pool">45 min · ~600 kcal · Cardio de zona grassa</div>
-        <div class="ex-list">
-          <div class="ex-item"><span class="ex-num">0</span><div class="ex-img-placeholder">escalfament<br>piscina.jpg</div><div><div class="ex-name">Escalfament — crol suau</div><div class="ex-tip">10 m anada i tornada sense pausa, ritme molt suau</div></div><span class="ex-sets blue">5 min</span></div>
-          <div class="ex-item"><span class="ex-num">1</span><div class="ex-img-placeholder">crol<br>continu.jpg</div><div><div class="ex-name">Sèries de longitud — crol continu</div><div class="ex-tip">10 m anada + tornada = 1 sèrie. Descans 30 seg</div></div><span class="ex-sets blue">10 sèries</span></div>
-          <div class="ex-item"><span class="ex-num">2</span><div class="ex-img-placeholder">aquajog<br>lateral.jpg</div><div><div class="ex-name">Aquajògging lateral</div><div class="ex-tip">Corre lateralment d'una paret a l'altra (5 m)</div></div><span class="ex-sets blue">3 × 3 min</span></div>
-          <div class="ex-item"><span class="ex-num">3</span><div class="ex-img-placeholder">braca<br>esquena.jpg</div><div><div class="ex-name">Sèries braça o esquena</div><div class="ex-tip">Varia l'estil per activar musculatura diferent</div></div><span class="ex-sets blue">6 sèries</span></div>
-          <div class="ex-item"><span class="ex-num">4</span><div class="ex-img-placeholder">estiraments<br>piscina.jpg</div><div><div class="ex-name">Estiraments dins l'aigua</div><div class="ex-tip">Agafa la paret, estira isquiotibials i esquena</div></div><span class="ex-sets blue">5 min</span></div>
-        </div>
-        <div class="note-box">La piscina de 10 m és perfecta per fer sèries curtes. <b>No cal saber nedar perfectament</b> — aquajògging i crol bàsic cremen igual de bé.</div>
-      </div>
-
-      <div id="pool-dj" class="tab-panel">
-        <div class="dur-tag pool">45 min · ~650 kcal · Alta intensitat per intervals</div>
-        <div class="ex-list">
-          <div class="ex-item"><span class="ex-num">0</span><div class="ex-img-placeholder">escalfament<br>piscina.jpg</div><div><div class="ex-name">Escalfament — crol suau</div><div class="ex-tip">Ritme molt relaxat, activa el cos</div></div><span class="ex-sets blue">5 min</span></div>
-          <div class="ex-item"><span class="ex-num">1</span><div class="ex-img-placeholder">sprint<br>piscina.jpg</div><div><div class="ex-name">HIIT: sprint 10 m + pausa</div><div class="ex-tip">Neda a màxima intensitat 10 m. Descans 30 seg</div></div><span class="ex-sets blue">10 × 10 m</span></div>
-          <div class="ex-item"><span class="ex-num">2</span><div class="ex-img-placeholder">kicking<br>paret.jpg</div><div><div class="ex-name">Treball de cames — kicking</div><div class="ex-tip">Agafia la paret, patades de crol 30 seg màxima velocitat</div></div><span class="ex-sets blue">5 × 30 seg</span></div>
-          <div class="ex-item"><span class="ex-num">3</span><div class="ex-img-placeholder">aquajog<br>rapid.jpg</div><div><div class="ex-name">Aquajògging ràpid</div><div class="ex-tip">Corre d'una paret a l'altra (5 m), alt genoll</div></div><span class="ex-sets blue">4 × 2 min</span></div>
-          <div class="ex-item"><span class="ex-num">4</span><div class="ex-img-placeholder">crol<br>suau.jpg</div><div><div class="ex-name">Sèries de recuperació — crol suau</div><div class="ex-tip">Baixa la freqüència cardíaca gradualment</div></div><span class="ex-sets blue">4 sèries</span></div>
-          <div class="ex-item"><span class="ex-num">5</span><div class="ex-img-placeholder">estiraments<br>piscina.jpg</div><div><div class="ex-name">Estiraments i respiració</div><div class="ex-tip">Estira braços, pit i cames. Respira profund</div></div><span class="ex-sets blue">5 min</span></div>
-        </div>
-        <div class="note-box"><b>HIIT a la piscina crema fins a un 30% més que HIIT en terra</b> per la resistència de l'aigua.</div>
-      </div>
-
-      <div id="pool-ds" class="tab-panel">
-        <div class="dur-tag pool">60 min · ~750 kcal · Sessió de tarda (despertar tardà)</div>
-        <div class="ex-list">
-          <div class="ex-item"><span class="ex-num">0</span><div class="ex-img-placeholder">escalfament<br>piscina.jpg</div><div><div class="ex-name">Escalfament progressiu</div><div class="ex-tip">Comença molt suau, augmenta el ritme cada 2 min</div></div><span class="ex-sets blue">8 min</span></div>
-          <div class="ex-item"><span class="ex-num">1</span><div class="ex-img-placeholder">crol<br>continu.jpg</div><div><div class="ex-name">Crol continu — zona aeròbica</div><div class="ex-tip">Ritme que et permeti parlar però amb esforç. Continus</div></div><span class="ex-sets blue">20 min</span></div>
-          <div class="ex-item"><span class="ex-num">2</span><div class="ex-img-placeholder">circuit<br>aquatic.jpg</div><div><div class="ex-name">Circuit aquàtic (x4 rounds)</div><div class="ex-tip">Aquajog 2 min + kicking 30 seg + sprint 10 m + descans 1 min</div></div><span class="ex-sets blue">4 rounds</span></div>
-          <div class="ex-item"><span class="ex-num">3</span><div class="ex-img-placeholder">pull<br>bracos.jpg</div><div><div class="ex-name">Treball de braços — pull</div><div class="ex-tip">Cames immòbils (pullbuoy si en tens), treball de braços pur</div></div><span class="ex-sets blue">6 sèries</span></div>
-          <div class="ex-item"><span class="ex-num">4</span><div class="ex-img-placeholder">baixada<br>ritme.jpg</div><div><div class="ex-name">Baixada de ritme — neda lliure</div><div class="ex-tip">Estil lliure, molt suau, recuperació final</div></div><span class="ex-sets blue">8 min</span></div>
-        </div>
-        <div class="note-box">La sessió del dissabte va bé cap a les <b>15:00–16:00</b>. Espera 1,5–2 h després de dinar abans d'entrar a l'aigua.</div>
-      </div>
+      <div class="deficit-bar"><div class="deficit-fill" id="deficitFill"></div></div>
+      <div class="note"><b>Important:</b> Un dèficit d'1 kg/setmana és el límit del recomanat. Si et sents molt fatigat, puja a 1.900–2.000 kcal/dia i accepta ~0,75 kg/setmana — la constància bat la urgència.</div>
     </div>
   </section>
 
@@ -338,28 +284,94 @@
   <span>Dèficit objectiu: 7.000 kcal/setmana · Pèrdua: ~1 kg/setmana</span>
 </footer>
 
-<!-- MODAL GRÀFICA -->
-<div class="modal-overlay" id="chartModal">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title">📊 Registre de pes</span>
-      <button class="modal-close" onclick="closeChart()">✕</button>
-    </div>
-    <div class="chart-toggle">
-      <button class="btn active" id="btnDiari" onclick="switchView('diari')">Diari</button>
-      <button class="btn btn-ghost" id="btnSetmanal" onclick="switchView('setmanal')">Setmanal</button>
-    </div>
-    <canvas id="weightChart"></canvas>
-    <div id="emptyChart" class="empty-chart" style="display:none;">Encara no hi ha dades de pes registrades.</div>
-    <div id="weekTableWrap"></div>
+<!-- LIGHTBOX -->
+<div class="modal-overlay" id="lightbox" onclick="if(event.target===this)closeLightbox()">
+  <div class="modal-box" style="max-width:520px;">
+    <button class="modal-close" onclick="closeLightbox()">✕</button>
+    <div id="lightboxContent" style="margin-top:30px;"></div>
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-// ── STORAGE (Firebase Realtime Database — sincronitzat entre dispositius) ──
+/* ============================================================
+   DADES
+   ============================================================ */
+const START_WEIGHT = 91;
+const GOALS = [80,75,70];
+const MAIN_GOAL = 75;
+
+const weekPlan = [
+  {dow:1,day:'Dilluns',type:'gym',title:'Tren Superior',time:'17:00–18:15',kcal:550,icon:'🏋️'},
+  {dow:2,day:'Dimarts',type:'pool',title:'Cardio base',time:'17:00–17:45',kcal:600,icon:'🏊'},
+  {dow:3,day:'Dimecres',type:'gym',title:'Tren Inferior',time:'17:00–18:15',kcal:500,icon:'🏋️'},
+  {dow:4,day:'Dijous',type:'pool',title:'HIIT aquàtic',time:'17:00–17:45',kcal:650,icon:'🏊'},
+  {dow:5,day:'Divendres',type:'gym',title:'Full Body',time:'17:00–18:30',kcal:700,icon:'🏋️'},
+  {dow:6,day:'Dissabte',type:'pool',title:'Sessió llarga',time:'15:00–16:00',kcal:750,icon:'🏊'},
+  {dow:7,day:'Diumenge',type:'rest',title:'Descans actiu',time:'Passejada suau',kcal:100,icon:'😌'}
+];
+const gymByDow = {1:0, 3:1, 5:2};
+const poolByDow = {2:0, 4:1, 6:2};
+
+const gymSessions = [
+  {label:'Dilluns · Tren Superior',dur:'75 min · inclou 15 min cardio final · ~550 kcal',exercises:[
+    {name:'Escalfament cinta o bici',tip:'Ritme suau, pols a 120–130 ppm',sets:'8 min',img:'escalfament_cinta.jpg'},
+    {name:'Press de banca amb barra',tip:'Descans 90 seg entre sèries',sets:'4 × 8–10',img:'press_banca.jpg'},
+    {name:'Lat pulldown assistit',tip:'Agafada ampla, baixa fins la barbeta',sets:'4 × 10',img:'lat_pulldown.jpg'},
+    {name:'Press militar amb mancuernes',tip:'Assegut, colzes a 90°',sets:'3 × 10',img:'press_militar.jpg'},
+    {name:'Rem en politja baixa',tip:"Esquena recta, apreta l'escàpula",sets:'3 × 12',img:'cable_row.jpg'},
+    {name:'Cúrls de bíceps alternats',tip:'Sense balanceig del tronc',sets:'3 × 12',img:'curls_biceps.jpg'},
+    {name:'Extensió de tríceps en politja',tip:'Colzes fixes, empenta cap avall',sets:'3 × 12',img:'triceps_politja.jpg'},
+    {name:'Cardio final — cinta inclinada',tip:'Inclinació 6–8%, ritme constant',sets:'15 min',img:'cardio_cinta.jpg'}
+  ]},
+  {label:'Dimecres · Tren Inferior',dur:'75 min · inclou 15 min cardio final · ~500 kcal',exercises:[
+    {name:'Escalfament cinta o bici',tip:'Ritme suau, activació articular',sets:'8 min',img:'escalfament_cinta.jpg'},
+    {name:'Sentadilles amb barra',tip:'Baixa fins paral·lel, genolls sobre puntes',sets:'4 × 8–10',img:'sentadilles.jpg'},
+    {name:'Pes mort romanès',tip:'Esquena neutra, nota els isquiotibials',sets:'3 × 10',img:'pes_mort.jpg'},
+    {name:'Extensió de quàdriceps',tip:'Moviment controlat a la baixada',sets:'3 × 12',img:'extensio_quadriceps.jpg'},
+    {name:'Curl femoral estirat',tip:'Peus en flexió, apreta gluti',sets:'3 × 12',img:'curl_femoral.jpg'},
+    {name:'Hip thrust amb barra',tip:'Espatlles al banc, apreta gluti dalt',sets:'3 × 12',img:'hip_thrust.jpg'},
+    {name:'Elevació de bessons dret',tip:'Control a la baixada, rang complet',sets:'3 × 15',img:'bessons.jpg'},
+    {name:'Cardio final — cinta inclinada',tip:'Inclinació 6–8%, caminar a bon ritme',sets:'15 min',img:'cardio_cinta.jpg'}
+  ]},
+  {label:'Divendres · Full Body',dur:'90 min · inclou 20 min cardio final · ~700 kcal',exercises:[
+    {name:'Escalfament cinta o bici',tip:'Ritme moderat, pols a 130–140 ppm',sets:'8 min',img:'escalfament_cinta.jpg'},
+    {name:'Sentadilla goblet',tip:'Mancuerna al pit, esquena recta',sets:'3 × 12',img:'sentadilla_goblet.jpg'},
+    {name:'Press de banca inclinat',tip:'Banc 30–45°, pectoral alt',sets:'3 × 10',img:'press_inclinat.jpg'},
+    {name:'Rem amb mancuerna unilateral',tip:'Genoll al banc, esquena paral·lela',sets:'3 × 10 c/u',img:'rem_mancuerna.jpg'},
+    {name:'Estocades amb mancuernes',tip:'Pas llarg, genoll no passa el peu',sets:'3 × 10 c/u',img:'estocades.jpg'},
+    {name:'Flexions (push-ups)',tip:'Pit toca terra, cos recte',sets:'3 × màxim',img:'flexions.jpg'},
+    {name:'Planxa lateral alternada',tip:'30 seg cada costat',sets:'3 × 30 seg',img:'planxa_lateral.jpg'},
+    {name:'Cardio final — cinta/el·líptica',tip:'Intensitat moderada-alta',sets:'20 min',img:'cardio_elliptica.jpg'}
+  ]}
+];
+
+const poolSessions = [
+  {label:'Dimarts · Cardio base',dur:'45 min · ~600 kcal · Zona grassa',exercises:[
+    {name:'Escalfament — crol suau',tip:'10 m anada i tornada, ritme molt suau',sets:'5 min',img:null},
+    {name:'Sèries de longitud — crol continu',tip:'10 m + tornada = 1 sèrie. Descans 30 seg',sets:'10 sèries',img:null},
+    {name:'Aquajògging lateral',tip:"Corre lateralment d'una paret a l'altra",sets:'3 × 3 min',img:null},
+    {name:'Sèries braça o esquena',tip:"Varia l'estil per activar musculatura diferent",sets:'6 sèries',img:null},
+    {name:"Estiraments dins l'aigua",tip:'Agafa la paret, estira isquiotibials i esquena',sets:'5 min',img:null}
+  ]},
+  {label:'Dijous · HIIT aquàtic',dur:'45 min · ~650 kcal · Alta intensitat',exercises:[
+    {name:'Escalfament — crol suau',tip:'Ritme molt relaxat',sets:'5 min',img:null},
+    {name:'HIIT: sprint 10 m + pausa',tip:'Màxima intensitat 10 m, descans 30 seg',sets:'10 × 10 m',img:null},
+    {name:'Kicking a la paret',tip:'Patades de crol 30 seg màxima velocitat',sets:'5 × 30 seg',img:null},
+    {name:'Aquajògging ràpid',tip:"D'una paret a l'altra, alt genoll",sets:'4 × 2 min',img:null},
+    {name:'Crol suau de recuperació',tip:'Baixa el pols gradualment',sets:'4 sèries',img:null}
+  ]},
+  {label:'Dissabte · Sessió llarga',dur:'60 min · ~750 kcal · 15:00–16:00',exercises:[
+    {name:'Escalfament progressiu',tip:'Comença suau, augmenta cada 2 min',sets:'8 min',img:null},
+    {name:'Crol continu — zona aeròbica',tip:'Ritme que et permeti parlar amb esforç',sets:'20 min',img:null},
+    {name:'Circuit aquàtic (x4)',tip:'Aquajog+kicking+sprint+descans',sets:'4 rounds',img:null},
+    {name:'Treball de braços — pull',tip:'Cames immòbils, braços purs',sets:'6 sèries',img:null},
+    {name:'Baixada de ritme — neda lliure',tip:'Molt suau, recuperació final',sets:'8 min',img:null}
+  ]}
+];
+
+/* ============================================================
+   FIREBASE (persistència real, sincronitzada)
+   ============================================================ */
 var firebaseConfig = {
   apiKey: "AIzaSyB4qS3HAOnDtRtHsx93hwhqVkfzkd1EtAE",
   authDomain: "resgistre-pes.firebaseapp.com",
@@ -371,225 +383,430 @@ var firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 var dbRef = firebase.database().ref('weightLog');
+var weightLog = {};
 
-var cachedData = {};
-var firebaseReady = false;
-
-// Escolta canvis en temps real: si guardes des del mòbil, l'ordinador
-// s'actualitza sol (i viceversa), sense recarregar la pàgina.
-dbRef.on('value', function(snapshot) {
-  cachedData = snapshot.val() || {};
-  firebaseReady = true;
-  updateLastWeight();
-  if (document.getElementById('chartModal').classList.contains('open')) {
-    renderChart();
-  }
-}, function(err) {
+dbRef.on('value', function(snapshot){
+  weightLog = snapshot.val() || {};
+  renderAll();
+}, function(err){
   console.error('Error de connexió amb Firebase:', err);
   alert('No s\'ha pogut connectar amb la base de dades. Comprova la connexió a internet.');
 });
 
-function loadData() {
-  return cachedData;
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function todayStr(){ return new Date().toISOString().split('T')[0]; }
+function fmtDate(s){ const p=s.split('-'); return p[2]+'/'+p[1]+'/'+p[0].slice(2); }
+function sortedEntries(){ return Object.keys(weightLog).sort().map(k=>[k,weightLog[k]]); }
+function currentWeight(){ const e=sortedEntries(); return e.length? e[e.length-1][1] : START_WEIGHT; }
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+
+function linearRegression(entries){
+  if(entries.length<2) return null;
+  const t0 = new Date(entries[0][0]).getTime();
+  const pts = entries.map(([d,w])=>[ (new Date(d).getTime()-t0)/86400000, w ]);
+  const n = pts.length;
+  const sx = pts.reduce((a,p)=>a+p[0],0), sy = pts.reduce((a,p)=>a+p[1],0);
+  const sxx = pts.reduce((a,p)=>a+p[0]*p[0],0), sxy = pts.reduce((a,p)=>a+p[0]*p[1],0);
+  const denom = (n*sxx - sx*sx);
+  if(denom===0) return null;
+  const slope = (n*sxy - sx*sy)/denom;
+  const intercept = (sy - slope*sx)/n;
+  return {slope, intercept, t0, lastT: pts[pts.length-1][0]};
 }
-function saveData(d) {
-  // No s'utilitza directament; els desats es fan amb dbRef.child(...).set(...)
+
+function getMonday(d){ const day=(d.getDay()+6)%7; const r=new Date(d); r.setDate(d.getDate()-day); r.setHours(0,0,0,0); return r; }
+function isoDate(d){ return d.toISOString().split('T')[0]; }
+function currentWeekDates(){ const mon=getMonday(new Date()); return Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;}); }
+function isoWeekKey(dateStr){
+  const d=new Date(dateStr); d.setHours(0,0,0,0);
+  d.setDate(d.getDate()+3-((d.getDay()+6)%7));
+  const w1=new Date(d.getFullYear(),0,4);
+  const wk=1+Math.round(((d-w1)/86400000-3+((w1.getDay()+6)%7))/7);
+  return d.getFullYear()+'-S'+String(wk).padStart(2,'0');
+}
+function todayDow(){ const d=new Date().getDay(); return d===0?7:d; }
+function imgFallback(el){
+  const ph=document.createElement('div');
+  ph.className='ex-img-ph';
+  ph.textContent=el.getAttribute('data-name-file')||el.src.split('/').pop();
+  ph.onclick=function(){ openLightbox('', el.alt); };
+  el.replaceWith(ph);
 }
 
-// ── INIT ─────────────────────────────────────────────────────────────
-var chartInst = null;
-var currentView = 'diari';
+/* ============================================================
+   RENDER: EXERCICIS I PLA SETMANAL
+   ============================================================ */
+let selectedDow = todayDow();
 
-function todayStr() {
-  var d = new Date();
-  return d.toISOString().split('T')[0];
+function exCard(ex, idx){
+  const media = ex.img
+    ? '<img class="ex-img" src="'+ex.img+'" alt="'+ex.name+'" loading="lazy" data-name-file="'+ex.img+'" onerror="imgFallback(this)" onclick="openLightbox(\''+ex.img+'\',\''+ex.name.replace(/'/g,"")+'\')">'
+    : '<div class="ex-img-ph" onclick="openLightbox(\'\',\''+ex.name.replace(/'/g,"")+'\')">sense foto<br>'+ (ex.name.split(' ')[0]) +'</div>';
+  return '<div class="ex-card"><div class="ex-media">'+media+'</div>'+
+    '<div class="ex-body"><div class="ex-head"><span class="ex-idx">'+idx+'</span><h4>'+ex.name+'</h4><span class="ex-sets">'+ex.sets+'</span></div>'+
+    '<p class="ex-tip">'+ex.tip+'</p></div></div>';
 }
 
-window.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('weightDate').value = todayStr();
-  // updateLastWeight() s'executa automàticament quan arriben les dades de Firebase
-});
+function renderCalendar(){
+  const dates = currentWeekDates();
+  document.getElementById('calGrid').innerHTML = weekPlan.map((day,i)=>{
+    const d=dates[i];
+    const sel = day.dow===selectedDow ? ' selected':'';
+    return '<div class="cal-day '+day.type+sel+'" onclick="selectDay('+day.dow+')">'+
+      '<div class="cd-name">'+day.day+'</div><div class="cd-date">'+String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'</div>'+
+      '<div class="cd-icon">'+day.icon+'</div><div class="cd-title">'+day.title+'</div>'+
+      '<div class="cd-kcal">~'+day.kcal+' kcal</div></div>';
+  }).join('');
+}
+function selectDay(dow){ selectedDow=dow; renderCalendar(); renderDayDetail(dow); }
 
-// ── SAVE WEIGHT ───────────────────────────────────────────────────────
-function saveWeight() {
-  var date = document.getElementById('weightDate').value;
-  var kg   = parseFloat(document.getElementById('weightKg').value);
-  if (!date || isNaN(kg) || kg < 30 || kg > 300) {
-    alert('Introdueix un pes vàlid (entre 30 i 300 kg).');
+function renderDayDetail(dow){
+  const day = weekPlan.find(d=>d.dow===dow);
+  const wrap = document.getElementById('dayDetailWrap');
+  if(day.type==='rest'){
+    wrap.innerHTML = '<div class="card" style="padding:30px 20px;text-align:center;color:var(--muted);">'+
+      '<div style="font-size:26px;margin-bottom:8px;">😌</div><b style="color:var(--text);">Dia de descans actiu</b><br>Passejada suau de 45–60 min. Aprofita per recuperar.</div>';
     return;
   }
-  dbRef.child(date).set(kg).then(function() {
-    var msg = document.getElementById('savedMsg');
-    msg.style.opacity = '1';
-    setTimeout(function(){ msg.style.opacity = '0'; }, 2000);
-    // updateLastWeight() s'executa sol via el listener 'value'
-  }).catch(function(err) {
-    alert('Error en desar a la base de dades: ' + err.message);
+  const session = day.type==='gym' ? gymSessions[gymByDow[dow]] : poolSessions[poolByDow[dow]];
+  const tagClass = day.type==='gym' ? 'gym' : 'pool';
+  const icon = day.type==='gym' ? '💪' : '🏊';
+  wrap.innerHTML = '<div class="card"><div style="padding:16px 18px 0;"><span class="dur-tag '+tagClass+'">'+icon+' '+session.dur+'</span></div>'+
+    '<div class="ex-grid" style="padding:16px 18px 18px;">'+session.exercises.map((ex,i)=>exCard(ex,i)).join('')+'</div></div>';
+}
+
+/* ============================================================
+   LIGHTBOX
+   ============================================================ */
+function openLightbox(src, name){
+  const c = document.getElementById('lightboxContent');
+  if(src){
+    c.innerHTML = '<img class="lightbox-img" src="'+src+'" alt="'+name+'" onerror="this.parentElement.innerHTML=\'<div style=padding:40px;text-align:center;color:var(--dim)>Imatge no trobada:<br><b>'+src+'</b><br><br>Desa la foto amb aquest nom a la mateixa carpeta.</div>\'"><p style="text-align:center;margin-top:12px;font-weight:700;">'+name+'</p>';
+  } else {
+    c.innerHTML = '<div style="padding:40px;text-align:center;color:var(--dim);">📷 Encara no hi ha foto per <b>'+name+'</b></div>';
+  }
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox(){ document.getElementById('lightbox').classList.remove('open'); }
+
+/* ============================================================
+   RESUM / OBJECTIUS / PREDICCIO / ESTADISTIQUES
+   ============================================================ */
+function animateNumber(el, target, decimals, suffix){
+  const start = 0, dur=900, t0=performance.now();
+  function step(t){
+    const p = Math.min(1,(t-t0)/dur);
+    const eased = 1-Math.pow(1-p,3);
+    const val = start + (target-start)*eased;
+    el.textContent = val.toFixed(decimals) + (suffix||'');
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function streakDays(){
+  const keys = Object.keys(weightLog).sort();
+  if(!keys.length) return 0;
+  let streak=1;
+  let cur = new Date(keys[keys.length-1]);
+  for(let i=keys.length-2;i>=0;i--){
+    const prev = new Date(keys[i]);
+    const diff = Math.round((cur-prev)/86400000);
+    if(diff===1){ streak++; cur=prev; } else break;
+  }
+  return streak;
+}
+function daysLeftInWeek(){
+  const today = new Date().getDay();
+  const iso = today===0?7:today;
+  return 7-iso;
+}
+function renderDashboard(){
+  const cw = currentWeight();
+  const lost = (START_WEIGHT-cw);
+  const pct = clamp((lost/(START_WEIGHT-MAIN_GOAL))*100,0,100);
+  const stats = [
+    {lbl:'PES ACTUAL',val:cw.toFixed(1),suf:' kg'},
+    {lbl:'PES INICIAL',val:START_WEIGHT,suf:' kg'},
+    {lbl:'OBJECTIU',val:MAIN_GOAL,suf:' kg'},
+    {lbl:'KG PERDUTS',val:lost.toFixed(1),suf:' kg'},
+    {lbl:'% COMPLETAT',val:pct.toFixed(0),suf:'%'},
+    {lbl:'RATXA DE REGISTRE',val:streakDays(),suf:' dies'},
+    {lbl:'DIES RESTANTS SETMANA',val:daysLeftInWeek(),suf:''}
+  ];
+  document.getElementById('dashStats').innerHTML = stats.map(s=>
+    '<div class="stat-box"><div class="lbl">'+s.lbl+'</div><div class="val" data-target="'+s.val+'" data-suf="'+s.suf+'">0</div></div>'
+  ).join('');
+  document.querySelectorAll('#dashStats .val').forEach(el=>{
+    const t = parseFloat(el.getAttribute('data-target'));
+    const dec = el.getAttribute('data-target').includes('.')?1:0;
+    animateNumber(el, isNaN(t)?0:t, dec, el.getAttribute('data-suf'));
+  });
+  document.getElementById('deficitFill').style.width='65.3%';
+}
+function renderGoals(){
+  const cw = currentWeight();
+  const html = GOALS.map(g=>{
+    const pct = clamp(((START_WEIGHT-cw)/(START_WEIGHT-g))*100,0,100);
+    const done = cw<=g;
+    return '<div class="goal-item"><div class="goal-top"><span>Arribar a '+g+' kg</span><span class="pct">'+pct.toFixed(0)+'%</span></div>'+
+      '<div class="goal-track"><div class="goal-fill'+(done?' done':'')+'" data-w="'+pct+'"></div></div>'+
+      '<div class="goal-sub">'+(done? '✓ Objectiu assolit' : 'Falten '+Math.max(0,(cw-g)).toFixed(1)+' kg')+'</div></div>';
+  }).join('');
+  document.getElementById('goalList').innerHTML = html;
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('.goal-fill').forEach(el=>{ el.style.width = el.getAttribute('data-w')+'%'; });
   });
 }
-
-function updateLastWeight() {
-  var data = loadData();
-  var keys = Object.keys(data).sort();
-  var el = document.getElementById('weightLast');
-  if (!keys.length) { el.innerHTML = ''; return; }
-  var last = keys[keys.length - 1];
-  var diff = '';
-  if (keys.length >= 2) {
-    var prev = data[keys[keys.length - 2]];
-    var delta = (data[last] - prev).toFixed(1);
-    var col = delta > 0 ? '#d5a2a2' : '#a8d5a2';
-    var sign = delta > 0 ? '+' : '';
-    diff = ' <span style="color:' + col + '">(' + sign + delta + ' kg vs dia anterior)</span>';
-  }
-  el.innerHTML = 'Últim registre: <b>' + last + '</b> — <b>' + data[last] + ' kg</b>' + diff;
-}
-
-// ── CHART ─────────────────────────────────────────────────────────────
-function openChart() {
-  document.getElementById('chartModal').classList.add('open');
-  renderChart();
-}
-function closeChart() {
-  document.getElementById('chartModal').classList.remove('open');
-}
-document.getElementById('chartModal').addEventListener('click', function(e) {
-  if (e.target === this) closeChart();
-});
-
-function switchView(v) {
-  currentView = v;
-  document.getElementById('btnDiari').className    = v === 'diari'    ? 'btn active' : 'btn btn-ghost';
-  document.getElementById('btnSetmanal').className = v === 'setmanal' ? 'btn active' : 'btn btn-ghost';
-  renderChart();
-}
-
-function getISOWeek(dateStr) {
-  var d = new Date(dateStr);
-  d.setHours(0,0,0,0);
-  d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
-  var w1 = new Date(d.getFullYear(), 0, 4);
-  return d.getFullYear() + '-S' + String(1 + Math.round(((d - w1) / 86400000 - 3 + (w1.getDay() + 6) % 7) / 7)).padStart(2,'0');
-}
-
-function renderChart() {
-  var data = loadData();
-  var keys = Object.keys(data).sort();
-  var canvas = document.getElementById('weightChart');
-  var empty  = document.getElementById('emptyChart');
-  var tableWrap = document.getElementById('weekTableWrap');
-
-  if (chartInst) { chartInst.destroy(); chartInst = null; }
-  tableWrap.innerHTML = '';
-
-  if (!keys.length) {
-    canvas.style.display = 'none';
-    empty.style.display = 'flex';
+function renderPrediction(){
+  const entries = sortedEntries();
+  const reg = linearRegression(entries);
+  const grid = document.getElementById('predGrid');
+  if(!reg || reg.slope>=0){
+    grid.innerHTML = '<div class="pred-box" style="grid-column:1/-1;"><div class="p-lbl">PREDICCIÓ</div><div class="p-val" style="font-size:13px;">Registra pes durant uns dies per veure la predicció de tendència.</div></div>';
     return;
   }
-  canvas.style.display = 'block';
-  empty.style.display = 'none';
+  const weeklyRate = (-reg.slope*7).toFixed(2);
+  const lastDate = new Date(entries[entries.length-1][0]);
+  const boxes = [{lbl:'RITME SETMANAL',val:weeklyRate+' kg',sub:'de mitjana'}];
+  GOALS.forEach(g=>{
+    const tGoal = (g - reg.intercept)/reg.slope;
+    if(tGoal <= reg.lastT){
+      boxes.push({lbl:'OBJECTIU '+g+'KG',val:'✓ Assolit',sub:''});
+    } else {
+      const daysAhead = Math.round(tGoal - reg.lastT);
+      const d = new Date(lastDate); d.setDate(d.getDate()+daysAhead);
+      boxes.push({lbl:'DATA PER '+g+'KG',val:d.toLocaleDateString('ca-ES',{day:'2-digit',month:'short'}),sub:daysAhead+' dies'});
+    }
+  });
+  grid.innerHTML = boxes.map(b=>'<div class="pred-box"><div class="p-lbl">'+b.lbl+'</div><div class="p-val">'+b.val+'</div><div class="p-sub">'+b.sub+'</div></div>').join('');
+}
+function renderAdvancedStats(){
+  const entries = sortedEntries();
+  const grid = document.getElementById('advGrid');
+  if(entries.length<2){
+    grid.innerHTML = '<div class="adv-cell" style="grid-column:1/-1;"><div class="a-lbl">ESTADÍSTIQUES</div><div class="a-val" style="font-size:13px;">Calen almenys 2 registres.</div></div>';
+    return;
+  }
+  const weights = entries.map(e=>e[1]);
+  const minW = Math.min(...weights), maxW = Math.max(...weights);
+  let biggestDrop = 0, biggestDropDate='';
+  for(let i=1;i<entries.length;i++){
+    const diff = entries[i][1]-entries[i-1][1];
+    if(diff<biggestDrop){ biggestDrop=diff; biggestDropDate=entries[i][0]; }
+  }
+  const weeks = {};
+  entries.forEach(([d,w])=>{ const wk=isoWeekKey(d); if(!weeks[wk]) weeks[wk]=[]; weeks[wk].push(w); });
+  const wKeys = Object.keys(weeks).sort();
+  const wAvgs = wKeys.map(k=>weeks[k].reduce((a,b)=>a+b,0)/weeks[k].length);
+  let bestWeek=null,bestDelta=0,worstWeek=null,worstDelta=0;
+  for(let i=1;i<wAvgs.length;i++){
+    const delta = wAvgs[i]-wAvgs[i-1];
+    if(delta<bestDelta || bestWeek===null){ bestDelta=delta; bestWeek=wKeys[i]; }
+    if(delta>worstDelta || worstWeek===null){ worstDelta=delta; worstWeek=wKeys[i]; }
+  }
+  const avgWeeklyLoss = wAvgs.length>1 ? ((wAvgs[0]-wAvgs[wAvgs.length-1])/(wAvgs.length-1)).toFixed(2) : '—';
+  const cells = [
+    {lbl:'MITJANA PÈRDUA/SETMANA',val:avgWeeklyLoss+' kg'},
+    {lbl:'MILLOR SETMANA',val:bestWeek?bestWeek+' ('+bestDelta.toFixed(2)+' kg)':'—'},
+    {lbl:'PITJOR SETMANA',val:worstWeek?worstWeek+' ('+(worstDelta>0?'+':'')+worstDelta.toFixed(2)+' kg)':'—'},
+    {lbl:'MAJOR DESCENS EN 1 DIA',val:biggestDrop<0?biggestDrop.toFixed(1)+' kg':'—',sub:biggestDropDate},
+    {lbl:'PES MÍNIM REGISTRAT',val:minW.toFixed(1)+' kg'},
+    {lbl:'PES MÀXIM REGISTRAT',val:maxW.toFixed(1)+' kg'},
+    {lbl:'TOTAL DE REGISTRES',val:entries.length}
+  ];
+  grid.innerHTML = cells.map(c=>'<div class="adv-cell"><div class="a-lbl">'+c.lbl+'</div><div class="a-val">'+c.val+'</div></div>').join('');
+}
 
-  if (currentView === 'diari') {
-    var labels = keys.map(function(k) {
-      var p = k.split('-');
-      return p[2] + '/' + p[1];
-    });
-    var vals = keys.map(function(k) { return data[k]; });
-    chartInst = new Chart(canvas, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Pes (kg)',
-          data: vals,
-          borderColor: '#a8d5a2',
-          backgroundColor: 'rgba(168,213,162,0.08)',
-          pointBackgroundColor: '#a8d5a2',
-          pointRadius: 5,
-          pointHoverRadius: 7,
-          tension: 0.3,
-          fill: true
-        }]
-      },
-      options: chartOptions('Pes diari (kg)')
-    });
+/* ============================================================
+   REGISTRE DE PES (Firebase)
+   ============================================================ */
+function saveWeight(){
+  const date = document.getElementById('weightDate').value;
+  const kg = parseFloat(document.getElementById('weightKg').value);
+  if(!date || isNaN(kg) || kg<30 || kg>300){ alert('Introdueix un pes vàlid (30–300 kg).'); return; }
+  dbRef.child(date).set(kg).then(function(){
+    const msg = document.getElementById('savedMsg');
+    msg.style.opacity='1'; setTimeout(()=>msg.style.opacity='0',2000);
+  }).catch(function(err){ alert('Error en desar: '+err.message); });
+}
+function deleteEntry(date){
+  if(!confirm('Eliminar el registre del '+fmtDate(date)+'?')) return;
+  dbRef.child(date).remove().catch(function(err){ alert('Error en eliminar: '+err.message); });
+}
+function editEntry(date){
+  const cur = weightLog[date];
+  const val = prompt('Nou pes per '+fmtDate(date)+' (kg):', cur);
+  if(val===null) return;
+  const kg = parseFloat(val);
+  if(isNaN(kg)||kg<30||kg>300){ alert('Valor no vàlid.'); return; }
+  dbRef.child(date).set(kg).catch(function(err){ alert('Error en desar: '+err.message); });
+}
+function resetAllData(){
+  if(!confirm('Segur que vols esborrar tot el registre de pes? No es pot desfer.')) return;
+  dbRef.remove().catch(function(err){ alert('Error en esborrar: '+err.message); });
+}
+function renderHistory(){
+  const entries = sortedEntries();
+  const tbody = document.getElementById('histBody');
+  if(!entries.length){ tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--dim);padding:20px;">Encara no hi ha registres.</td></tr>'; return; }
+  let html='';
+  for(let i=entries.length-1;i>=0;i--){
+    const [d,w] = entries[i];
+    const prevDiff = i>0 ? (w-entries[i-1][1]) : null;
+    const startDiff = w-START_WEIGHT;
+    html += '<tr><td>'+fmtDate(d)+'</td><td><b>'+w.toFixed(1)+' kg</b></td>'+
+      '<td style="color:'+(prevDiff==null?'var(--dim)':prevDiff<=0?'var(--gym)':'var(--danger)')+'">'+(prevDiff==null?'—':(prevDiff>0?'+':'')+prevDiff.toFixed(1)+' kg')+'</td>'+
+      '<td style="color:'+(startDiff<=0?'var(--gym)':'var(--danger)')+'">'+(startDiff>0?'+':'')+startDiff.toFixed(1)+' kg</td>'+
+      '<td class="row-actions"><button onclick="editEntry(\''+d+'\')" title="Editar">✏️</button><button onclick="deleteEntry(\''+d+'\')" title="Eliminar">🗑️</button></td></tr>';
+  }
+  tbody.innerHTML = html;
+  const el = document.getElementById('weightLast');
+  const last = entries[entries.length-1];
+  el.innerHTML = 'Últim registre: <b>'+fmtDate(last[0])+'</b> — <b>'+last[1].toFixed(1)+' kg</b>';
+}
 
+/* ============================================================
+   GRAFICA
+   ============================================================ */
+let chartInst=null, currentRange='30', currentView='diari';
+function filteredEntries(){
+  const all = sortedEntries();
+  if(currentRange==='all') return all;
+  const days = parseInt(currentRange,10);
+  const cutoff = Date.now() - days*86400000;
+  return all.filter(([d])=> new Date(d).getTime() >= cutoff);
+}
+function chartOptions(){
+  return {
+    responsive:true,
+    interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'bottom',labels:{color:'#6b7280',font:{family:'Inter',size:11},boxWidth:10,padding:12}}},
+    scales:{
+      x:{ticks:{color:'#9aa1ac',font:{size:10}},grid:{color:'#eef0f3'}},
+      y:{ticks:{color:'#9aa1ac',font:{size:10},callback:v=>v+' kg'},grid:{color:'#eef0f3'}}
+    }
+  };
+}
+function renderChart(){
+  const canvas = document.getElementById('weightChart');
+  const empty = document.getElementById('emptyChart');
+  const tableWrap = document.getElementById('weekTableWrap');
+  const entries = filteredEntries();
+  if(chartInst){ chartInst.destroy(); chartInst=null; }
+  tableWrap.innerHTML='';
+  if(!entries.length){ canvas.style.display='none'; empty.style.display='flex'; return; }
+  canvas.style.display='block'; empty.style.display='none';
+
+  if(currentView==='diari'){
+    const allEntries = sortedEntries();
+    const reg = linearRegression(allEntries);
+    const labels = entries.map(([d])=>fmtDate(d));
+    const realData = entries.map(([,w])=>w);
+    const maData = realData.map((_,i)=>{
+      const s = Math.max(0,i-1), e = Math.min(realData.length-1,i+1);
+      const slice = realData.slice(s,e+1);
+      return +(slice.reduce((a,b)=>a+b,0)/slice.length).toFixed(2);
+    });
+    let trendData = new Array(entries.length).fill(null);
+    if(reg){
+      trendData = entries.map(([d])=>{
+        const t=(new Date(d).getTime()-reg.t0)/86400000;
+        return +(reg.intercept + reg.slope*t).toFixed(2);
+      });
+    }
+    let futureLabels=[], predData=[];
+    if(reg && reg.slope<0){
+      const lastDate = new Date(allEntries[allEntries.length-1][0]);
+      for(let i=1;i<=6;i++){
+        const d = new Date(lastDate); d.setDate(d.getDate()+i*7);
+        futureLabels.push(fmtDate(isoDate(d)));
+        const t=(d.getTime()-reg.t0)/86400000;
+        predData.push(+(reg.intercept+reg.slope*t).toFixed(2));
+      }
+    }
+    const allLabels = labels.concat(futureLabels);
+    const realFull = realData.concat(futureLabels.map(()=>null));
+    const maFull = maData.concat(futureLabels.map(()=>null));
+    const trendFull = trendData.concat(futureLabels.map(()=>null));
+    const predFull = new Array(Math.max(0,labels.length-1)).fill(null).concat([realData[realData.length-1]]).concat(predData);
+    const goalFull = allLabels.map(()=>MAIN_GOAL);
+
+    chartInst = new Chart(canvas,{
+      type:'line',
+      data:{labels:allLabels, datasets:[
+        {label:'Pes real', data:realFull, borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,.08)', pointRadius:4, pointBackgroundColor:'#16a34a', tension:.3, fill:true, spanGaps:false},
+        {label:'Mitjana mòbil', data:maFull, borderColor:'#7c3aed', borderDash:[3,3], pointRadius:0, tension:.3, fill:false},
+        {label:'Tendència', data:trendFull, borderColor:'#0284c7', borderDash:[6,4], pointRadius:0, tension:0, fill:false},
+        {label:'Predicció', data:predFull, borderColor:'#ea580c', borderDash:[2,4], pointRadius:2, tension:0, fill:false},
+        {label:'Objectiu ('+MAIN_GOAL+'kg)', data:goalFull, borderColor:'#dc2626', borderDash:[8,4], pointRadius:0, borderWidth:1.5, tension:0, fill:false}
+      ]},
+      options: chartOptions()
+    });
   } else {
-    // Setmanal
-    var weeks = {};
-    keys.forEach(function(k) {
-      var w = getISOWeek(k);
-      if (!weeks[w]) weeks[w] = [];
-      weeks[w].push(data[k]);
+    const weeks={};
+    entries.forEach(([d,w])=>{ const wk=isoWeekKey(d); if(!weeks[wk]) weeks[wk]=[]; weeks[wk].push(w); });
+    const wKeys = Object.keys(weeks).sort();
+    const avgV=[],maxV=[],minV=[];
+    wKeys.forEach(k=>{ const arr=weeks[k]; avgV.push(+(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2)); maxV.push(Math.max(...arr)); minV.push(Math.min(...arr)); });
+    chartInst = new Chart(canvas,{
+      type:'line',
+      data:{labels:wKeys, datasets:[
+        {label:'Mitjana',data:avgV,borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,.08)',pointRadius:4,tension:.3,fill:true},
+        {label:'Màxim',data:maxV,borderColor:'#dc2626',borderDash:[4,3],pointRadius:3,tension:.3,fill:false},
+        {label:'Mínim',data:minV,borderColor:'#0284c7',borderDash:[4,3],pointRadius:3,tension:.3,fill:false},
+        {label:'Objectiu',data:wKeys.map(()=>MAIN_GOAL),borderColor:'#7c3aed',borderDash:[8,4],pointRadius:0,tension:0,fill:false}
+      ]},
+      options: chartOptions()
     });
-    var wKeys = Object.keys(weeks).sort();
-    var avgVals = [], maxVals = [], minVals = [];
-    wKeys.forEach(function(w) {
-      var arr = weeks[w];
-      avgVals.push(parseFloat((arr.reduce(function(a,b){return a+b;},0)/arr.length).toFixed(2)));
-      maxVals.push(Math.max.apply(null,arr));
-      minVals.push(Math.min.apply(null,arr));
-    });
-
-    chartInst = new Chart(canvas, {
-      type: 'line',
-      data: {
-        labels: wKeys,
-        datasets: [
-          { label: 'Mitjana', data: avgVals, borderColor: '#a8d5a2', backgroundColor: 'rgba(168,213,162,0.08)', pointBackgroundColor: '#a8d5a2', pointRadius: 5, tension: 0.3, fill: false },
-          { label: 'Màxim',   data: maxVals, borderColor: '#d5a2a2', backgroundColor: 'transparent', pointBackgroundColor: '#d5a2a2', pointRadius: 4, borderDash: [4,3], tension: 0.3 },
-          { label: 'Mínim',   data: minVals, borderColor: '#a2c4d5', backgroundColor: 'transparent', pointBackgroundColor: '#a2c4d5', pointRadius: 4, borderDash: [4,3], tension: 0.3 }
-        ]
-      },
-      options: chartOptions('Pes setmanal (kg)')
-    });
-
-    // Taula setmanal
-    var html = '<table class="week-stats-table" style="margin-top:16px;"><thead><tr><th>Setmana</th><th>Mitjana</th><th>Màxim</th><th>Mínim</th><th>Dies</th></tr></thead><tbody>';
-    wKeys.forEach(function(w, i) {
-      html += '<tr>'
-        + '<td class="td-amber">' + w + '</td>'
-        + '<td class="td-green">' + avgVals[i] + ' kg</td>'
-        + '<td class="td-red">' + maxVals[i] + ' kg</td>'
-        + '<td style="color:var(--blue)">' + minVals[i] + ' kg</td>'
-        + '<td>' + weeks[w].length + ' dies</td>'
-        + '</tr>';
-    });
-    html += '</tbody></table>';
+    let html='<table class="hist" style="margin-top:14px;"><thead><tr><th>Setmana</th><th>Mitjana</th><th>Màxim</th><th>Mínim</th><th>Dies</th></tr></thead><tbody>';
+    wKeys.forEach((w,i)=>{ html+='<tr><td>'+w+'</td><td><b>'+avgV[i]+' kg</b></td><td style="color:var(--danger)">'+maxV[i]+' kg</td><td style="color:var(--pool)">'+minV[i]+' kg</td><td>'+weeks[w].length+'</td></tr>'; });
+    html+='</tbody></table>';
     tableWrap.innerHTML = html;
   }
 }
 
-function chartOptions(title) {
-  return {
-    responsive: true,
-    interaction: { mode: 'index', intersect: false },
-    plugins: {
-      legend: { labels: { color: '#888', font: { family: 'DM Mono', size: 11 } } },
-      title: { display: false }
-    },
-    scales: {
-      x: { ticks: { color: '#888', font: { family: 'DM Mono', size: 10 } }, grid: { color: '#2a2a2a' } },
-      y: {
-        ticks: { color: '#888', font: { family: 'DM Mono', size: 10 }, callback: function(v){ return v + ' kg'; } },
-        grid: { color: '#2a2a2a' },
-        suggestedMin: function() {
-          var d = loadData(); var vals = Object.values(d);
-          return vals.length ? Math.min.apply(null,vals) - 2 : 70;
-        }()
-      }
-    }
-  };
+/* ============================================================
+   EVENTS / INIT
+   ============================================================ */
+document.getElementById('rangeSeg').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  document.querySelectorAll('#rangeSeg button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  currentRange = e.target.getAttribute('data-range');
+  renderChart();
+});
+document.getElementById('viewSeg').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  currentView = e.target.getAttribute('data-view');
+  renderChart();
+});
+
+const sectionsForReveal = document.querySelectorAll('section');
+const io = new IntersectionObserver((entriesList)=>{
+  entriesList.forEach(en=>{ if(en.isIntersecting) en.target.classList.add('in-view'); });
+},{threshold:.08});
+sectionsForReveal.forEach(s=>io.observe(s));
+
+function renderAll(){
+  renderDashboard();
+  renderGoals();
+  renderPrediction();
+  renderAdvancedStats();
+  renderCalendar();
+  renderDayDetail(selectedDow);
+  renderHistory();
+  renderChart();
 }
 
-// ── TABS ──────────────────────────────────────────────────────────────
-function showTab(group, id, btn) {
-  document.querySelectorAll('[id^="' + group + '-"]').forEach(function(p){ p.classList.remove('active'); });
-  btn.closest('.card').querySelectorAll('.tab-btn').forEach(function(t){ t.classList.remove('active'); });
-  document.getElementById(group + '-' + id).classList.add('active');
-  btn.classList.add('active');
-}
+window.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('weightDate').value = todayStr();
+  renderCalendar();
+  renderDayDetail(selectedDow);
+});
 </script>
 </body>
 </html>

@@ -120,8 +120,8 @@ section.in-view{opacity:1;transform:translateY(0);}
 .ex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
 .ex-card{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--surface);transition:all .2s;display:flex;flex-direction:column;}
 .ex-card:hover{box-shadow:var(--shadow-hover);transform:translateY(-3px);}
-.ex-media{padding:10px;display:flex;justify-content:center;align-items:center;}
-.ex-img{width:100%;height:160px;object-fit:contain;object-position:center;background:#fff;border-radius:9px;}
+.ex-media{padding:10px 10px 0;}
+.ex-img{width:100%;height:110px;object-fit:cover;border-radius:9px;cursor:zoom-in;background:var(--surface-alt);}
 .ex-img-ph{width:100%;height:110px;border-radius:9px;border:1.5px dashed var(--border);background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'DM Mono',monospace;color:var(--dim);text-align:center;line-height:1.3;padding:4px;cursor:pointer;}
 .ex-body{padding:10px 12px 12px;flex:1;display:flex;flex-direction:column;}
 .ex-head{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
@@ -163,7 +163,8 @@ table.hist tr:hover td{background:var(--surface-alt);}
 .seg button{font-size:11.5px;font-weight:700;padding:6px 12px;border-radius:7px;background:transparent;border:none;color:var(--muted);}
 .seg button.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow);}
 .chart-box{padding:16px 18px 18px;}
-canvas#weightChart{width:100% !important;max-height:320px;}
+.chart-canvas-wrap{position:relative;width:100%;height:300px;}
+.chart-canvas-wrap canvas{position:absolute;top:0;left:0;width:100% !important;height:100% !important;}
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;color:var(--dim);font-size:13px;gap:6px;}
 
 /* LIGHTBOX */
@@ -196,7 +197,7 @@ footer{max-width:1140px;margin:0 auto;padding:24px 20px 50px;font-size:11.5px;co
 
   <!-- 2. GRAFICA -->
   <section id="grafica">
-    <div class="section-head"><h2>Gràfica d'evolució</h2><span class="sub">Real · tendència · predicció · mitjana mòbil</span></div>
+    <div class="section-head"><h2>Gràfica d'evolució</h2><span class="sub">Real · tendència · predicció</span></div>
     <div class="card">
       <div class="chart-controls">
         <div class="seg" id="rangeSeg">
@@ -210,7 +211,7 @@ footer{max-width:1140px;margin:0 auto;padding:24px 20px 50px;font-size:11.5px;co
         </div>
       </div>
       <div class="chart-box">
-        <canvas id="weightChart"></canvas>
+        <div class="chart-canvas-wrap"><canvas id="weightChart"></canvas></div>
         <div class="empty-state" id="emptyChart" style="display:none;">📉 Encara no hi ha dades de pes registrades.</div>
         <div id="weekTableWrap"></div>
       </div>
@@ -358,7 +359,7 @@ const poolSessions = [
     {name:'HIIT: sprint 10 m + pausa',tip:'Màxima intensitat 10 m, descans 30 seg',sets:'10 × 10 m',img:null},
     {name:'Kicking a la paret',tip:'Patades de crol 30 seg màxima velocitat',sets:'5 × 30 seg',img:null},
     {name:'Aquajògging ràpid',tip:"D'una paret a l'altra, alt genoll",sets:'4 × 2 min',img:null},
-    {name:'Crol suau de recuperació',tip:'Baixa el pols gradualment',sets:'4 sèries',img:null}
+    {name:'Crol suau de recuperació',tip:'Baixa la freqüència cardíaca gradualment',sets:'4 sèries',img:null}
   ]},
   {label:'Dissabte · Sessió llarga',dur:'60 min · ~750 kcal · 15:00–16:00',exercises:[
     {name:'Escalfament progressiu',tip:'Comença suau, augmenta cada 2 min',sets:'8 min',img:null},
@@ -373,13 +374,13 @@ const poolSessions = [
    FIREBASE (persistència real, sincronitzada)
    ============================================================ */
 var firebaseConfig = {
-  apiKey: "AIzaSyB4qS3HAOnDtRtHsx93hwhqVkfzkd1EtAE",
-  authDomain: "resgistre-pes.firebaseapp.com",
-  databaseURL: "https://resgistre-pes-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "resgistre-pes",
-  storageBucket: "resgistre-pes.firebasestorage.app",
-  messagingSenderId: "667432975687",
-  appId: "1:667432975687:web:ea37c0e96be971f6396062"
+  apiKey: "AIzaSyAbtw6K357bVRP34Bo90ZBaVIuoaE4onks",
+  authDomain: "registrepes.firebaseapp.com",
+  databaseURL: "https://registrepes-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "registrepes",
+  storageBucket: "registrepes.firebasestorage.app",
+  messagingSenderId: "290844920469",
+  appId: "1:290844920469:web:cd7d541e7ee63cfa75699c"
 };
 firebase.initializeApp(firebaseConfig);
 var dbRef = firebase.database().ref('weightLog');
@@ -681,6 +682,7 @@ function filteredEntries(){
 function chartOptions(){
   return {
     responsive:true,
+    maintainAspectRatio:false,
     interaction:{mode:'index',intersect:false},
     plugins:{legend:{position:'bottom',labels:{color:'#6b7280',font:{family:'Inter',size:11},boxWidth:10,padding:12}}},
     scales:{
@@ -704,11 +706,7 @@ function renderChart(){
     const reg = linearRegression(allEntries);
     const labels = entries.map(([d])=>fmtDate(d));
     const realData = entries.map(([,w])=>w);
-    const maData = realData.map((_,i)=>{
-      const s = Math.max(0,i-1), e = Math.min(realData.length-1,i+1);
-      const slice = realData.slice(s,e+1);
-      return +(slice.reduce((a,b)=>a+b,0)/slice.length).toFixed(2);
-    });
+
     let trendData = new Array(entries.length).fill(null);
     if(reg){
       trendData = entries.map(([d])=>{
@@ -728,19 +726,15 @@ function renderChart(){
     }
     const allLabels = labels.concat(futureLabels);
     const realFull = realData.concat(futureLabels.map(()=>null));
-    const maFull = maData.concat(futureLabels.map(()=>null));
     const trendFull = trendData.concat(futureLabels.map(()=>null));
     const predFull = new Array(Math.max(0,labels.length-1)).fill(null).concat([realData[realData.length-1]]).concat(predData);
-    const goalFull = allLabels.map(()=>MAIN_GOAL);
 
     chartInst = new Chart(canvas,{
       type:'line',
       data:{labels:allLabels, datasets:[
         {label:'Pes real', data:realFull, borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,.08)', pointRadius:4, pointBackgroundColor:'#16a34a', tension:.3, fill:true, spanGaps:false},
-        {label:'Mitjana mòbil', data:maFull, borderColor:'#7c3aed', borderDash:[3,3], pointRadius:0, tension:.3, fill:false},
         {label:'Tendència', data:trendFull, borderColor:'#0284c7', borderDash:[6,4], pointRadius:0, tension:0, fill:false},
-        {label:'Predicció', data:predFull, borderColor:'#ea580c', borderDash:[2,4], pointRadius:2, tension:0, fill:false},
-        {label:'Objectiu ('+MAIN_GOAL+'kg)', data:goalFull, borderColor:'#dc2626', borderDash:[8,4], pointRadius:0, borderWidth:1.5, tension:0, fill:false}
+        {label:'Predicció', data:predFull, borderColor:'#ea580c', borderDash:[2,4], pointRadius:2, tension:0, fill:false}
       ]},
       options: chartOptions()
     });

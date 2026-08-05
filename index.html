@@ -224,7 +224,7 @@ footer{max-width:1140px;margin:0 auto;padding:24px 20px 50px;font-size:11.5px;co
     <div class="card">
       <div class="weight-row">
         <input type="date" id="weightDate" class="inp">
-        <div class="kg-wrap"><input type="number" id="weightKg" step="0.1" min="30" max="300" placeholder="91.0"><span class="mono" style="font-size:12px;color:var(--muted)">kg</span></div>
+        <div class="kg-wrap"><input type="number" id="weightKg" step="0.01" min="30" max="300" placeholder="91.00"><span class="mono" style="font-size:12px;color:var(--muted)">kg</span></div>
         <button class="btn btn-primary" onclick="saveWeight()">Desar pes</button>
         <span class="saved-msg" id="savedMsg">✓ Desat!</span>
       </div>
@@ -528,10 +528,10 @@ function renderDashboard(){
   const lost = (START_WEIGHT-cw);
   const pct = clamp((lost/(START_WEIGHT-MAIN_GOAL))*100,0,100);
   const stats = [
-    {lbl:'PES ACTUAL',val:cw.toFixed(1),suf:' kg'},
+    {lbl:'PES ACTUAL',val:cw.toFixed(2),suf:' kg'},
     {lbl:'PES INICIAL',val:START_WEIGHT,suf:' kg'},
     {lbl:'OBJECTIU',val:MAIN_GOAL,suf:' kg'},
-    {lbl:'KG PERDUTS',val:lost.toFixed(1),suf:' kg'},
+    {lbl:'KG PERDUTS',val:lost.toFixed(2),suf:' kg'},
     {lbl:'% COMPLETAT',val:pct.toFixed(0),suf:'%'},
     {lbl:'RATXA DE REGISTRE',val:streakDays(),suf:' dies'},
     {lbl:'DIES RESTANTS SETMANA',val:daysLeftInWeek(),suf:''}
@@ -540,8 +540,9 @@ function renderDashboard(){
     '<div class="stat-box"><div class="lbl">'+s.lbl+'</div><div class="val" data-target="'+s.val+'" data-suf="'+s.suf+'">0</div></div>'
   ).join('');
   document.querySelectorAll('#dashStats .val').forEach(el=>{
-    const t = parseFloat(el.getAttribute('data-target'));
-    const dec = el.getAttribute('data-target').includes('.')?1:0;
+    const raw = el.getAttribute('data-target');
+    const t = parseFloat(raw);
+    const dec = raw.includes('.') ? (raw.split('.')[1]||'').length : 0;
     animateNumber(el, isNaN(t)?0:t, dec, el.getAttribute('data-suf'));
   });
   document.getElementById('deficitFill').style.width='65.3%';
@@ -657,15 +658,15 @@ function renderHistory(){
     const [d,w] = entries[i];
     const prevDiff = i>0 ? (w-entries[i-1][1]) : null;
     const startDiff = w-START_WEIGHT;
-    html += '<tr><td>'+fmtDate(d)+'</td><td><b>'+w.toFixed(1)+' kg</b></td>'+
-      '<td style="color:'+(prevDiff==null?'var(--dim)':prevDiff<=0?'var(--gym)':'var(--danger)')+'">'+(prevDiff==null?'—':(prevDiff>0?'+':'')+prevDiff.toFixed(1)+' kg')+'</td>'+
-      '<td style="color:'+(startDiff<=0?'var(--gym)':'var(--danger)')+'">'+(startDiff>0?'+':'')+startDiff.toFixed(1)+' kg</td>'+
+    html += '<tr><td>'+fmtDate(d)+'</td><td><b>'+w.toFixed(2)+' kg</b></td>'+
+      '<td style="color:'+(prevDiff==null?'var(--dim)':prevDiff<=0?'var(--gym)':'var(--danger)')+'">'+(prevDiff==null?'—':(prevDiff>0?'+':'')+prevDiff.toFixed(2)+' kg')+'</td>'+
+      '<td style="color:'+(startDiff<=0?'var(--gym)':'var(--danger)')+'">'+(startDiff>0?'+':'')+startDiff.toFixed(2)+' kg</td>'+
       '<td class="row-actions"><button onclick="editEntry(\''+d+'\')" title="Editar">✏️</button><button onclick="deleteEntry(\''+d+'\')" title="Eliminar">🗑️</button></td></tr>';
   }
   tbody.innerHTML = html;
   const el = document.getElementById('weightLast');
   const last = entries[entries.length-1];
-  el.innerHTML = 'Últim registre: <b>'+fmtDate(last[0])+'</b> — <b>'+last[1].toFixed(1)+' kg</b>';
+  el.innerHTML = 'Últim registre: <b>'+fmtDate(last[0])+'</b> — <b>'+last[1].toFixed(2)+' kg</b>';
 }
 
 /* ============================================================

@@ -705,21 +705,30 @@ function renderChart(){
   if(currentView==='diari'){
     const allEntries = sortedEntries();
     const reg = linearRegression(allEntries);
-    const labels = entries.map(([d])=>fmtDate(d));
-    const realData = entries.map(([,w])=>w);
 
-    let trendData = new Array(entries.length).fill(null);
+    const firstEntryDate = new Date(entries[0][0]);
+    const lastEntryDate = new Date(entries[entries.length-1][0]);
+    const fullDates = [];
+    for(let d=new Date(firstEntryDate); d<=lastEntryDate; d.setDate(d.getDate()+1)){
+      fullDates.push(new Date(d));
+    }
+    const labels = fullDates.map(d=>fmtDate(isoDate(d)));
+    const realData = fullDates.map(d=>{
+      const key = isoDate(d);
+      return Object.prototype.hasOwnProperty.call(weightLog,key) ? weightLog[key] : null;
+    });
+
+    let trendData = new Array(fullDates.length).fill(null);
     if(reg){
-      trendData = entries.map(([d])=>{
-        const t=(new Date(d).getTime()-reg.t0)/86400000;
+      trendData = fullDates.map(d=>{
+        const t=(d.getTime()-reg.t0)/86400000;
         return +(reg.intercept + reg.slope*t).toFixed(2);
       });
     }
     let futureLabels=[], predData=[];
     if(reg && reg.slope<0){
-      const lastDate = new Date(allEntries[allEntries.length-1][0]);
       for(let i=1;i<=6;i++){
-        const d = new Date(lastDate); d.setDate(d.getDate()+i*7);
+        const d = new Date(lastEntryDate); d.setDate(d.getDate()+i*7);
         futureLabels.push(fmtDate(isoDate(d)));
         const t=(d.getTime()-reg.t0)/86400000;
         predData.push(+(reg.intercept+reg.slope*t).toFixed(2));
@@ -733,7 +742,7 @@ function renderChart(){
     chartInst = new Chart(canvas,{
       type:'line',
       data:{labels:allLabels, datasets:[
-        {label:'Pes real', data:realFull, borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,.08)', pointRadius:4, pointBackgroundColor:'#16a34a', tension:.3, fill:true, spanGaps:false},
+        {label:'Pes real', data:realFull, borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,.08)', pointRadius:4, pointBackgroundColor:'#16a34a', tension:.3, fill:true, spanGaps:true},
         {label:'Tendència', data:trendFull, borderColor:'#0284c7', borderDash:[6,4], pointRadius:0, tension:0, fill:false},
         {label:'Predicció', data:predFull, borderColor:'#ea580c', borderDash:[2,4], pointRadius:2, tension:0, fill:false}
       ]},

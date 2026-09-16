@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Pla d'Entrenament — Dashboard</title>
+<title>Pla d'Entrenament — Handbol</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -16,11 +16,14 @@
   --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);
   --shadow-hover:0 8px 20px rgba(16,24,40,.10),0 2px 6px rgba(16,24,40,.06);
   --radius:16px;
+  --hand:#7c3aed; --hand-bg:#f4eefe; --hand-border:#ddcbfa;
   --gym:#16a34a; --gym-bg:#eafbf1; --gym-border:#bdeccd;
-  --pool:#0284c7; --pool-bg:#eaf7fd; --pool-border:#bfe6f7;
+  --recov:#0284c7; --recov-bg:#eaf7fd; --recov-border:#bfe6f7;
+  --match:#dc2626; --match-bg:#fdeeee; --match-border:#f7c9c9;
   --rest:#64748b; --rest-bg:#f1f3f5; --rest-border:#dde1e6;
   --accent:#7c3aed; --accent-bg:#f4eefe;
   --danger:#dc2626; --danger-bg:#fdeeee;
+  --warn:#ea580c; --warn-bg:#fff3ea;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
@@ -29,10 +32,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-
 img{max-width:100%;}
 button{font-family:inherit;cursor:pointer;}
 
-/* LAYOUT */
 .page-title{max-width:1140px;margin:0 auto;padding:26px 20px 4px;}
 .page-title h1{font-size:22px;font-weight:800;letter-spacing:-.02em;}
-.page-title .dot{width:8px;height:8px;border-radius:50%;background:var(--gym);display:inline-block;margin-right:8px;}
+.page-title .dot{width:8px;height:8px;border-radius:50%;background:var(--hand);display:inline-block;margin-right:8px;}
 .wrap{max-width:1140px;margin:0 auto;padding:12px 20px 60px;}
 .section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
 .section-head h2{font-size:20px;font-weight:800;letter-spacing:-.02em;}
@@ -40,36 +42,36 @@ button{font-family:inherit;cursor:pointer;}
 section{margin-bottom:44px;opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease;}
 section.in-view{opacity:1;transform:translateY(0);}
 
-/* CARD BASE */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);transition:box-shadow .2s ease,transform .2s ease;}
-.card.hoverable:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px);}
 
-/* HERO (Resum) */
-.hero{background:linear-gradient(135deg,#0f172a,#1e2a44);border-radius:20px;padding:28px 26px;color:#fff;position:relative;overflow:hidden;margin-bottom:20px;}
-.hero::after{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.35),transparent 70%);}
+/* HERO */
+.hero{background:linear-gradient(135deg,#0f172a,#241a44);border-radius:20px;padding:28px 26px;color:#fff;position:relative;overflow:hidden;margin-bottom:20px;}
+.hero::after{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.4),transparent 70%);}
 .hero-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;position:relative;z-index:1;}
 .hero-title{font-size:22px;font-weight:800;letter-spacing:-.02em;}
-.hero-title span{color:#86efac;}
+.hero-title span{color:#c4b5fd;}
 .hero-meta{font-family:'DM Mono',monospace;font-size:11px;color:#b7c0d1;text-align:right;line-height:1.9;}
 .hero-meta b{color:#fff;}
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:12px;margin-top:18px;position:relative;z-index:1;}
 .stat-box{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 14px;}
 .stat-box .lbl{font-size:10px;color:#a9b3c4;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
 .stat-box .val{font-size:19px;font-weight:800;color:#fff;}
-.stat-box .val small{font-size:11px;font-weight:500;color:#a9b3c4;}
 
-/* CALORIE BALANCE */
-.balance-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:18px;}
+/* BALANCE */
+.balance-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:18px;}
 .balance-item{text-align:center;padding:12px;border-radius:12px;background:var(--surface-alt);}
 .balance-item .b-lbl{font-size:10.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:6px;}
-.balance-item .b-val{font-size:21px;font-weight:800;}
+.balance-item .b-val{font-size:20px;font-weight:800;}
 .balance-item .b-sub{font-size:10px;color:var(--dim);margin-top:2px;font-family:'DM Mono',monospace;}
-.g{color:var(--gym);} .p{color:var(--pool);} .r{color:var(--rest);} .a{color:var(--accent);} .d{color:var(--danger);}
+.g{color:var(--gym);} .d{color:var(--danger);} .w{color:var(--warn);} .h{color:var(--hand);}
 .deficit-bar{height:10px;border-radius:6px;background:var(--border);overflow:hidden;margin:4px 18px 2px;position:relative;}
 .deficit-fill{height:100%;background:linear-gradient(90deg,#16a34a,#ea580c 70%,#dc2626);width:0%;transition:width 1.2s cubic-bezier(.22,.9,.34,1);}
-.note{background:var(--surface-alt);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--muted);margin:0 18px 18px;line-height:1.7;}
+.note{background:var(--surface-alt);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--muted);margin:12px 18px 18px;line-height:1.7;}
 .note b{color:var(--text);}
-@media (max-width:820px){.balance-grid{grid-template-columns:1fr;}}
+.note.warn{background:var(--warn-bg);color:#9a4318;}
+.note.warn b{color:#7c2d12;}
+@media (max-width:900px){.balance-grid{grid-template-columns:1fr 1fr;}}
+@media (max-width:520px){.balance-grid{grid-template-columns:1fr;}}
 
 /* GOALS */
 .goal-list{display:flex;flex-direction:column;gap:16px;padding:18px;}
@@ -82,28 +84,43 @@ section.in-view{opacity:1;transform:translateY(0);}
 
 /* PREDICTION */
 .pred-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:18px;}
-.pred-box{background:var(--surface-alt);border-radius:12px;padding:13px;text-align:center;}
+.pred-box{background:var(--surface-alt);border-radius:12px;padding:13px;text-align:center;transition:all .18s;}
+.pred-box:hover{background:var(--accent-bg);transform:translateY(-2px);}
 .pred-box .p-lbl{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:5px;}
 .pred-box .p-val{font-size:15px;font-weight:800;}
 .pred-box .p-sub{font-size:10px;color:var(--dim);margin-top:2px;}
-@media (max-width:820px){.pred-grid{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:900px){.pred-grid{grid-template-columns:repeat(2,1fr);}}
+
+/* DETAILS / ACCORDION */
+details.explain{margin:0 18px 18px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface-alt);}
+details.explain summary{padding:12px 14px;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted);list-style:none;}
+details.explain summary::-webkit-details-marker{display:none;}
+details.explain summary::before{content:'▸ ';transition:transform .2s;}
+details.explain[open] summary::before{content:'▾ ';}
+details.explain .ex-content{padding:0 14px 14px;font-size:12px;color:var(--muted);line-height:1.75;}
+details.explain .ex-content b{color:var(--text);}
 
 /* ADVANCED STATS */
-.adv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden;margin:18px;}
-.adv-cell{background:var(--surface);padding:14px;}
-.adv-cell .a-lbl{font-size:10.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:4px;}
+.adv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden;margin:18px;}
+.adv-cell{background:var(--surface);padding:14px;transition:background .15s;}
+.adv-cell:hover{background:var(--surface-alt);}
+.adv-cell .a-lbl{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;}
 .adv-cell .a-val{font-size:16px;font-weight:800;}
-@media (max-width:820px){.adv-grid{grid-template-columns:1fr 1fr;}}
+.adv-cell .a-sub{font-size:10px;color:var(--dim);margin-top:2px;font-family:'DM Mono',monospace;}
+@media (max-width:900px){.adv-grid{grid-template-columns:1fr 1fr;}}
 @media (max-width:520px){.adv-grid{grid-template-columns:1fr;}}
 
 /* CALENDAR */
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;padding:18px;}
 .cal-day{border-radius:12px;padding:12px 10px;border:1px solid var(--border);cursor:pointer;transition:all .18s;text-align:center;position:relative;}
 .cal-day:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover);}
+.cal-day.handball{background:var(--hand-bg);border-color:var(--hand-border);}
 .cal-day.gym{background:var(--gym-bg);border-color:var(--gym-border);}
-.cal-day.pool{background:var(--pool-bg);border-color:var(--pool-border);}
+.cal-day.recovery{background:var(--recov-bg);border-color:var(--recov-border);}
+.cal-day.match{background:var(--match-bg);border-color:var(--match-border);}
 .cal-day.rest{background:var(--rest-bg);border-color:var(--rest-border);}
 .cal-day.selected{outline:2.5px solid var(--text);outline-offset:2px;}
+.cal-day.today::after{content:'AVUI';position:absolute;top:5px;right:6px;font-size:7.5px;font-weight:800;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:.05em;}
 .cal-day .cd-name{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);}
 .cal-day .cd-date{font-size:10px;color:var(--dim);font-family:'DM Mono',monospace;margin-bottom:6px;}
 .cal-day .cd-icon{font-size:22px;margin:4px 0;}
@@ -113,8 +130,10 @@ section.in-view{opacity:1;transform:translateY(0);}
 @media (max-width:520px){.cal-grid{grid-template-columns:repeat(2,1fr);}}
 
 .dur-tag{display:inline-flex;gap:6px;align-items:center;font-size:11px;font-family:'DM Mono',monospace;padding:5px 12px;border-radius:20px;margin-bottom:14px;font-weight:600;}
+.dur-tag.handball{background:var(--hand-bg);color:var(--hand);}
 .dur-tag.gym{background:var(--gym-bg);color:var(--gym);}
-.dur-tag.pool{background:var(--pool-bg);color:var(--pool);}
+.dur-tag.recovery{background:var(--recov-bg);color:var(--recov);}
+.dur-tag.match{background:var(--match-bg);color:var(--match);}
 
 /* EXERCISE CARDS */
 .ex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
@@ -127,7 +146,7 @@ section.in-view{opacity:1;transform:translateY(0);}
 .ex-head{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
 .ex-idx{font-size:9px;color:var(--dim);font-family:'DM Mono',monospace;}
 .ex-head h4{font-size:13px;font-weight:700;flex:1;}
-.ex-sets{font-size:10.5px;font-family:'DM Mono',monospace;color:var(--gym);font-weight:700;white-space:nowrap;}
+.ex-sets{font-size:10.5px;font-family:'DM Mono',monospace;color:var(--hand);font-weight:700;white-space:nowrap;}
 .ex-tip{font-size:11px;color:var(--muted);line-height:1.5;}
 
 /* WEIGHT INPUT */
@@ -135,7 +154,7 @@ section.in-view{opacity:1;transform:translateY(0);}
 .inp{background:var(--surface-alt);border:1.5px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;padding:9px 11px;outline:none;transition:border .15s;}
 .inp:focus{border-color:var(--accent);}
 .kg-wrap{display:flex;align-items:center;gap:6px;background:var(--surface-alt);border:1.5px solid var(--border);border-radius:9px;padding:6px 12px;}
-.kg-wrap input{background:transparent;border:none;font-family:'DM Mono',monospace;font-size:18px;font-weight:800;width:64px;outline:none;}
+.kg-wrap input{background:transparent;border:none;font-family:'DM Mono',monospace;font-size:18px;font-weight:800;width:74px;outline:none;}
 .btn{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;padding:9px 16px;border-radius:9px;border:1.5px solid transparent;transition:all .15s;}
 .btn:active{transform:scale(.97);}
 .btn-primary{background:var(--gym);color:#fff;}
@@ -148,24 +167,46 @@ section.in-view{opacity:1;transform:translateY(0);}
 .last-weight{padding:0 18px 16px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;}
 .last-weight b{color:var(--text);}
 
-/* HISTORY TABLE */
+/* HISTORY */
 .hist-wrap{overflow-x:auto;padding:0 18px 18px;}
 table.hist{width:100%;border-collapse:collapse;font-size:12.5px;}
-table.hist th{text-align:left;padding:8px 10px;color:var(--muted);font-weight:700;font-size:11px;border-bottom:2px solid var(--border);white-space:nowrap;}
+table.hist th{text-align:left;padding:8px 10px;color:var(--muted);font-weight:700;font-size:11px;border-bottom:2px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;}
+table.hist th:hover{color:var(--text);}
 table.hist td{padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
 table.hist tr:hover td{background:var(--surface-alt);}
 .row-actions button{background:none;border:none;font-size:13px;padding:3px 6px;border-radius:6px;color:var(--muted);}
-.row-actions button:hover{background:var(--surface-alt);color:var(--text);}
+.row-actions button:hover{background:var(--surface-alt);}
 
-/* CHART */
+/* CHART CONTROLS */
 .chart-controls{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:18px 18px 0;}
-.seg{display:flex;gap:4px;background:var(--surface-alt);padding:4px;border-radius:10px;}
-.seg button{font-size:11.5px;font-weight:700;padding:6px 12px;border-radius:7px;background:transparent;border:none;color:var(--muted);}
+.seg{display:flex;gap:4px;background:var(--surface-alt);padding:4px;border-radius:10px;flex-wrap:wrap;}
+.seg button{font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:7px;background:transparent;border:none;color:var(--muted);transition:all .15s;}
+.seg button:hover{color:var(--text);}
 .seg button.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow);}
-.chart-box{padding:16px 18px 18px;}
+.custom-range{display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 18px 0;}
+.custom-range.open{display:flex;}
+.custom-range .arrow{color:var(--dim);font-size:13px;}
+.line-toggles{display:flex;gap:6px;flex-wrap:wrap;padding:14px 18px 0;}
+.chip{font-size:11px;font-weight:700;padding:5px 11px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);color:var(--dim);transition:all .15s;}
+.chip.active{color:#fff;}
+.chip.active[data-line="real"]{background:#16a34a;border-color:#16a34a;}
+.chip.active[data-line="ema"]{background:#7c3aed;border-color:#7c3aed;}
+.chip.active[data-line="trend"]{background:#0284c7;border-color:#0284c7;}
+.chip.active[data-line="pred"]{background:#ea580c;border-color:#ea580c;}
+.chip.active[data-line="goal"]{background:#dc2626;border-color:#dc2626;}
+.chart-box{padding:16px 18px 0;}
 .chart-canvas-wrap{position:relative;width:100%;height:300px;}
 .chart-canvas-wrap canvas{position:absolute;top:0;left:0;width:100% !important;height:100% !important;}
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;color:var(--dim);font-size:13px;gap:6px;}
+
+/* RANGE STATS BOX */
+.range-stats{margin:16px 18px 18px;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.range-stats-head{background:var(--surface-alt);padding:9px 14px;font-size:11px;font-weight:800;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;}
+.range-chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:1px;background:var(--border);}
+.range-chip{background:var(--surface);padding:11px 12px;}
+.range-chip .rc-lbl{font-size:9.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px;text-transform:uppercase;letter-spacing:.03em;}
+.range-chip .rc-val{font-size:15px;font-weight:800;}
+.range-chip .rc-sub{font-size:9.5px;color:var(--dim);margin-top:1px;font-family:'DM Mono',monospace;}
 
 /* LIGHTBOX */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(2px);z-index:200;align-items:center;justify-content:center;padding:20px;}
@@ -176,45 +217,69 @@ table.hist tr:hover td{background:var(--surface-alt);}
 .lightbox-img{max-width:100%;max-height:70vh;border-radius:12px;display:block;margin:0 auto;}
 
 footer{max-width:1140px;margin:0 auto;padding:24px 20px 50px;font-size:11.5px;color:var(--dim);font-family:'DM Mono',monospace;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;border-top:1px solid var(--border);}
-
 @media (max-width:600px){ .hero-meta{display:none;} }
 </style>
 </head>
 <body>
 
-<div class="page-title"><h1><span class="dot"></span>Pla Fitness</h1></div>
+<div class="page-title"><h1><span class="dot"></span>Pla Fitness · Handbol</h1></div>
 
 <div class="wrap">
 
   <!-- 1. PLA SETMANAL -->
   <section id="pla-setmanal">
-    <div class="section-head"><h2>Pla setmanal</h2><span class="sub">Clica un dia per veure el programa a sota</span></div>
-    <div class="card">
-      <div class="cal-grid" id="calGrid"></div>
-    </div>
+    <div class="section-head"><h2>Pla setmanal</h2><span class="sub">Clica un dia per veure la sessió a sota</span></div>
+    <div class="card"><div class="cal-grid" id="calGrid"></div></div>
     <div id="dayDetailWrap" style="margin-top:12px;"></div>
   </section>
 
   <!-- 2. GRAFICA -->
   <section id="grafica">
-    <div class="section-head"><h2>Gràfica d'evolució</h2><span class="sub">Real · tendència · predicció</span></div>
+    <div class="section-head"><h2>Gràfica d'evolució</h2><span class="sub">Les estadístiques de sota s'ajusten al rang triat</span></div>
     <div class="card">
       <div class="chart-controls">
         <div class="seg" id="rangeSeg">
+          <button data-range="7">7 dies</button>
+          <button data-range="14">14 dies</button>
           <button data-range="30" class="active">1 mes</button>
           <button data-range="90">3 mesos</button>
+          <button data-range="180">6 mesos</button>
           <button data-range="all">Tot</button>
+          <button data-range="custom">📅 Personalitzat</button>
         </div>
         <div class="seg" id="viewSeg">
           <button data-view="diari" class="active">Diari</button>
           <button data-view="setmanal">Setmanal</button>
         </div>
       </div>
+
+      <div class="custom-range" id="customRangeBox">
+        <input type="date" id="customFrom" class="inp">
+        <span class="arrow">→</span>
+        <input type="date" id="customTo" class="inp">
+        <button class="btn btn-primary" onclick="applyCustomRange()">Aplicar</button>
+        <button class="btn btn-outline" onclick="setQuickCustom(0)">Aquest mes</button>
+        <button class="btn btn-outline" onclick="setQuickCustom(1)">Mes passat</button>
+      </div>
+
+      <div class="line-toggles" id="lineToggles">
+        <button class="chip active" data-line="real">Pes real</button>
+        <button class="chip" data-line="ema">Suavitzat (EMA)</button>
+        <button class="chip active" data-line="trend">Tendència</button>
+        <button class="chip active" data-line="pred">Predicció</button>
+        <button class="chip" data-line="goal">Objectiu</button>
+      </div>
+
       <div class="chart-box">
         <div class="chart-canvas-wrap"><canvas id="weightChart"></canvas></div>
-        <div class="empty-state" id="emptyChart" style="display:none;">📉 Encara no hi ha dades de pes registrades.</div>
-        <div id="weekTableWrap"></div>
+        <div class="empty-state" id="emptyChart" style="display:none;">📉 Encara no hi ha dades de pes en aquest rang.</div>
       </div>
+
+      <div class="range-stats" id="rangeStatsBox">
+        <div class="range-stats-head" id="rangeStatsHead">ESTADÍSTIQUES DEL RANG</div>
+        <div class="range-chips" id="rangeChips"></div>
+      </div>
+      <div id="weekTableWrap" style="padding:0 18px 18px;"></div>
     </div>
   </section>
 
@@ -224,17 +289,27 @@ footer{max-width:1140px;margin:0 auto;padding:24px 20px 50px;font-size:11.5px;co
     <div class="card">
       <div class="weight-row">
         <input type="date" id="weightDate" class="inp">
-        <div class="kg-wrap"><input type="number" id="weightKg" step="0.01" min="30" max="300" placeholder="91.00"><span class="mono" style="font-size:12px;color:var(--muted)">kg</span></div>
+        <div class="kg-wrap"><input type="number" id="weightKg" step="0.01" min="30" max="300" placeholder="81.00"><span class="mono" style="font-size:12px;color:var(--muted)">kg</span></div>
         <button class="btn btn-primary" onclick="saveWeight()">Desar pes</button>
         <span class="saved-msg" id="savedMsg">✓ Desat!</span>
       </div>
       <div class="last-weight" id="weightLast"></div>
-      <div class="section-head" style="padding:0 18px;"><h2 style="font-size:14px;">Historial</h2>
-        <button class="btn btn-danger-ghost" onclick="resetAllData()" style="font-size:11px;padding:5px 10px;">Esborrar tot</button>
+      <div class="section-head" style="padding:0 18px;">
+        <h2 style="font-size:14px;">Historial <span id="histCount" style="font-weight:500;color:var(--muted);font-size:11px;"></span></h2>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-outline" id="histToggleBtn" onclick="toggleHistLimit()" style="font-size:11px;padding:5px 10px;">Mostrar tot</button>
+          <button class="btn btn-danger-ghost" onclick="resetAllData()" style="font-size:11px;padding:5px 10px;">Esborrar tot</button>
+        </div>
       </div>
       <div class="hist-wrap">
         <table class="hist">
-          <thead><tr><th>Data</th><th>Pes</th><th>vs dia anterior</th><th>vs inici</th><th></th></tr></thead>
+          <thead><tr>
+            <th onclick="sortHist('date')">Data ⇅</th>
+            <th onclick="sortHist('weight')">Pes ⇅</th>
+            <th>vs dia anterior</th>
+            <th>vs inici</th>
+            <th></th>
+          </tr></thead>
           <tbody id="histBody"></tbody>
         </table>
       </div>
@@ -243,14 +318,23 @@ footer{max-width:1140px;margin:0 auto;padding:24px 20px 50px;font-size:11.5px;co
 
   <!-- 4. OBJECTIUS I PREDICCIO -->
   <section id="objectius">
-    <div class="section-head"><h2>Objectius i predicció</h2><span class="sub">Basat en la teva tendència real de pèrdua</span></div>
-    <div class="card">
-      <div class="goal-list" id="goalList"></div>
-    </div>
+    <div class="section-head"><h2>Objectius i predicció</h2><span class="sub">Model de regressió ponderada per recència</span></div>
+    <div class="card"><div class="goal-list" id="goalList"></div></div>
+
     <div class="card" style="margin-top:12px;">
-      <div class="section-head" style="padding:16px 18px 0;"><h2 style="font-size:15px;">Predicció automàtica</h2></div>
+      <div class="section-head" style="padding:16px 18px 0;"><h2 style="font-size:15px;">Predicció automàtica</h2><span class="sub" id="predQuality" style="padding-right:18px;"></span></div>
       <div class="pred-grid" id="predGrid"></div>
+      <details class="explain">
+        <summary>Com es calcula la predicció?</summary>
+        <div class="ex-content">
+          El model no fa una mitjana simple. Fa servir <b>regressió lineal ponderada per recència</b>: cada registre pesa menys com més antic és, amb una <b>vida mitjana de 21 dies</b>. Això vol dir que un pes d'ahir influeix el doble que un de fa 3 setmanes, perquè el teu ritme actual prediu el futur molt millor que el de fa dos mesos.<br><br>
+          A més calcula el <b>pes suavitzat (EMA)</b> per filtrar les oscil·lacions d'aigua i glucogen del dia a dia — especialment útil amb handbol, on la suor d'un entreno et pot baixar 1 kg fals.<br><br>
+          La <b>fiabilitat (R²)</b> indica quant s'ajusta la tendència a les teves dades reals: per sobre de 0,70 la predicció és sòlida; per sota de 0,40 vol dir que el pes fluctua massa i cal més constància en el registre.<br><br>
+          El <b>marge</b> de cada data surt de l'error estàndard del pendent: és el rang realista entre el millor i el pitjor escenari si mantens el ritme actual.
+        </div>
+      </details>
     </div>
+
     <div class="card" style="margin-top:12px;">
       <div class="section-head" style="padding:16px 18px 0;"><h2 style="font-size:15px;">Estadístiques avançades</h2></div>
       <div class="adv-grid" id="advGrid"></div>
@@ -262,30 +346,34 @@ footer{max-width:1140px;margin:0 auto;padding:24px 20px 50px;font-size:11.5px;co
     <div class="hero">
       <div class="hero-top">
         <div class="hero-title">Pla <span>Entrenament</span> Personal</div>
-        <div class="hero-meta">Horari feina: <b>8:00–16:30</b><br>Dilluns a Divendres</div>
+        <div class="hero-meta">Classe fins a les <b>20:00</b><br>Handbol <b>Dl · Dm · Dv</b> 21:00<br>Partit <b>diumenge</b></div>
       </div>
       <div class="stat-grid" id="dashStats"></div>
     </div>
-    <div class="section-head"><h2>Balanç calòric setmanal</h2><span class="sub">Dèficit objectiu: 7.000 kcal/setmana</span></div>
+    <div class="section-head"><h2>Balanç calòric setmanal</h2><span class="sub">Objectiu: 1 kg/setmana</span></div>
     <div class="card">
       <div class="balance-grid">
-        <div class="balance-item"><div class="b-lbl">CREMAT (metabolisme+exercici)</div><div class="b-val g">~20.126</div><div class="b-sub">kcal/setmana</div></div>
-        <div class="balance-item"><div class="b-lbl">INGERIT (alimentació)</div><div class="b-val" style="color:#ea580c;">~13.125</div><div class="b-sub">kcal/setmana</div></div>
+        <div class="balance-item"><div class="b-lbl">METABOLISME + NEAT</div><div class="b-val g">~16.650</div><div class="b-sub">kcal/setmana</div></div>
+        <div class="balance-item"><div class="b-lbl">EXERCICI DIRIGIT</div><div class="b-val h">~3.550</div><div class="b-sub">kcal/setmana</div></div>
+        <div class="balance-item"><div class="b-lbl">INGESTA OBJECTIU</div><div class="b-val w">~13.200</div><div class="b-sub">~1.885 kcal/dia</div></div>
         <div class="balance-item"><div class="b-lbl">DÈFICIT TOTAL</div><div class="b-val d">~7.000</div><div class="b-sub">→ ~1 kg greix/setmana</div></div>
       </div>
       <div class="deficit-bar"><div class="deficit-fill" id="deficitFill"></div></div>
-      <div class="note"><b>Important:</b> Un dèficit d'1 kg/setmana és el límit del recomanat. Si et sents molt fatigat, puja a 1.900–2.000 kcal/dia i accepta ~0,75 kg/setmana — la constància bat la urgència.</div>
+      <div class="note"><b>Repartiment de la ingesta:</b> no mengis les mateixes 1.885 kcal cada dia. Puja a ~2.100 els dies d'handbol (Dl, Dm, Dv) i el diumenge de partit, i baixa a ~1.600 dissabte i dijous. El total setmanal és el mateix, però arribes als entrenos i al partit amb energia.</div>
+      <div class="note warn"><b>Senyals d'alerta:</b> si acumules dues setmanes amb el rendiment baix al partit, molles les cames als entrenos o dorms malament, el dèficit és massa gran per la càrrega que portes. Puja 200–300 kcal/dia i accepta 0,75 kg/setmana — arribaràs igual i sense lesionar-te.</div>
     </div>
+
+    <div class="section-head" style="margin-top:24px;"><h2 style="font-size:16px;">Despesa per dia</h2></div>
+    <div class="card"><div class="adv-grid" id="kcalGrid"></div></div>
   </section>
 
 </div>
 
 <footer>
   <span>Entrenador Personal · Claude</span>
-  <span>Dèficit objectiu: 7.000 kcal/setmana · Pèrdua: ~1 kg/setmana</span>
+  <span>Handbol Dl/Dm/Dv · Gimnàs Dc · Partit diumenge</span>
 </footer>
 
-<!-- LIGHTBOX -->
 <div class="modal-overlay" id="lightbox" onclick="if(event.target===this)closeLightbox()">
   <div class="modal-box" style="max-width:520px;">
     <button class="modal-close" onclick="closeLightbox()">✕</button>
@@ -295,83 +383,99 @@ footer{max-width:1140px;margin:0 auto;padding:24px 20px 50px;font-size:11.5px;co
 
 <script>
 /* ============================================================
-   DADES
+   CONFIGURACIÓ
    ============================================================ */
 const START_WEIGHT = 91;
 const GOALS = [80,75,70];
 const MAIN_GOAL = 75;
+const EMA_ALPHA = 0.12;        // suavitzat ~15 dies
+const HALF_LIFE_DAYS = 21;     // ponderació per recència
 
 const weekPlan = [
-  {dow:1,day:'Dilluns',type:'gym',title:'Tren Superior',time:'17:00–18:15',kcal:550,icon:'🏋️'},
-  {dow:2,day:'Dimarts',type:'pool',title:'Cardio base',time:'17:00–17:45',kcal:600,icon:'🏊'},
-  {dow:3,day:'Dimecres',type:'gym',title:'Tren Inferior',time:'17:00–18:15',kcal:500,icon:'🏋️'},
-  {dow:4,day:'Dijous',type:'pool',title:'HIIT aquàtic',time:'17:00–17:45',kcal:650,icon:'🏊'},
-  {dow:5,day:'Divendres',type:'gym',title:'Full Body',time:'17:00–18:30',kcal:700,icon:'🏋️'},
-  {dow:6,day:'Dissabte',type:'pool',title:'Sessió llarga',time:'15:00–16:00',kcal:750,icon:'🏊'},
-  {dow:7,day:'Diumenge',type:'rest',title:'Descans actiu',time:'Passejada suau',kcal:100,icon:'😌'}
-];
-const gymByDow = {1:0, 3:1, 5:2};
-const poolByDow = {2:0, 4:1, 6:2};
-
-const gymSessions = [
-  {label:'Dilluns · Tren Superior',dur:'75 min · inclou 15 min cardio final · ~550 kcal',exercises:[
-    {name:'Escalfament cinta o bici',tip:'Ritme suau, pols a 120–130 ppm',sets:'8 min',img:'escalfament_cinta.jpg'},
-    {name:'Press de banca amb barra',tip:'Descans 90 seg entre sèries',sets:'4 × 8–10',img:'press_banca.jpg'},
-    {name:'Lat pulldown assistit',tip:'Agafada ampla, baixa fins la barbeta',sets:'4 × 10',img:'lat_pulldown.jpg'},
-    {name:'Press militar amb mancuernes',tip:'Assegut, colzes a 90°',sets:'3 × 10',img:'press_militar.jpg'},
-    {name:'Rem en politja baixa',tip:"Esquena recta, apreta l'escàpula",sets:'3 × 12',img:'cable_row.jpg'},
-    {name:'Cúrls de bíceps alternats',tip:'Sense balanceig del tronc',sets:'3 × 12',img:'curls_biceps.jpg'},
-    {name:'Extensió de tríceps en politja',tip:'Colzes fixes, empenta cap avall',sets:'3 × 12',img:'triceps_politja.jpg'},
-    {name:'Cardio final — cinta inclinada',tip:'Inclinació 6–8%, ritme constant',sets:'15 min',img:'cardio_cinta.jpg'}
-  ]},
-  {label:'Dimecres · Tren Inferior',dur:'75 min · inclou 15 min cardio final · ~500 kcal',exercises:[
-    {name:'Escalfament cinta o bici',tip:'Ritme suau, activació articular',sets:'8 min',img:'escalfament_cinta.jpg'},
-    {name:'Sentadilles amb barra',tip:'Baixa fins paral·lel, genolls sobre puntes',sets:'4 × 8–10',img:'sentadilles.jpg'},
-    {name:'Pes mort romanès',tip:'Esquena neutra, nota els isquiotibials',sets:'3 × 10',img:'pes_mort.jpg'},
-    {name:'Extensió de quàdriceps',tip:'Moviment controlat a la baixada',sets:'3 × 12',img:'extensio_quadriceps.jpg'},
-    {name:'Curl femoral estirat',tip:'Peus en flexió, apreta gluti',sets:'3 × 12',img:'curl_femoral.jpg'},
-    {name:'Hip thrust amb barra',tip:'Espatlles al banc, apreta gluti dalt',sets:'3 × 12',img:'hip_thrust.jpg'},
-    {name:'Elevació de bessons dret',tip:'Control a la baixada, rang complet',sets:'3 × 15',img:'bessons.jpg'},
-    {name:'Cardio final — cinta inclinada',tip:'Inclinació 6–8%, caminar a bon ritme',sets:'15 min',img:'cardio_cinta.jpg'}
-  ]},
-  {label:'Divendres · Full Body',dur:'90 min · inclou 20 min cardio final · ~700 kcal',exercises:[
-    {name:'Escalfament cinta o bici',tip:'Ritme moderat, pols a 130–140 ppm',sets:'8 min',img:'escalfament_cinta.jpg'},
-    {name:'Sentadilla goblet',tip:'Mancuerna al pit, esquena recta',sets:'3 × 12',img:'sentadilla_goblet.jpg'},
-    {name:'Press de banca inclinat',tip:'Banc 30–45°, pectoral alt',sets:'3 × 10',img:'press_inclinat.jpg'},
-    {name:'Rem amb mancuerna unilateral',tip:'Genoll al banc, esquena paral·lela',sets:'3 × 10 c/u',img:'rem_mancuerna.jpg'},
-    {name:'Estocades amb mancuernes',tip:'Pas llarg, genoll no passa el peu',sets:'3 × 10 c/u',img:'estocades.jpg'},
-    {name:'Flexions (push-ups)',tip:'Pit toca terra, cos recte',sets:'3 × màxim',img:'flexions.jpg'},
-    {name:'Planxa lateral alternada',tip:'30 seg cada costat',sets:'3 × 30 seg',img:'planxa_lateral.jpg'},
-    {name:'Cardio final — cinta/el·líptica',tip:'Intensitat moderada-alta',sets:'20 min',img:'cardio_elliptica.jpg'}
-  ]}
+  {dow:1,day:'Dilluns',type:'handball',title:'Handbol',time:'21:00–22:30',kcal:750,icon:'🤾'},
+  {dow:2,day:'Dimarts',type:'handball',title:'Handbol',time:'21:00–22:30',kcal:750,icon:'🤾'},
+  {dow:3,day:'Dimecres',type:'gym',title:'Força i prevenció',time:'20:45–21:45',kcal:450,icon:'🏋️'},
+  {dow:4,day:'Dijous',type:'recovery',title:'Descans actiu',time:'Flexible',kcal:200,icon:'🚶'},
+  {dow:5,day:'Divendres',type:'handball',title:'Handbol',time:'21:00–22:30',kcal:750,icon:'🤾'},
+  {dow:6,day:'Dissabte',type:'rest',title:'Descans total',time:'—',kcal:0,icon:'😴'},
+  {dow:7,day:'Diumenge',type:'match',title:'PARTIT',time:'Segons calendari',kcal:650,icon:'🏆'}
 ];
 
-const poolSessions = [
-  {label:'Dimarts · Cardio base',dur:'45 min · ~600 kcal · Zona grassa',exercises:[
-    {name:'Escalfament — crol suau',tip:'10 m anada i tornada, ritme molt suau',sets:'5 min',img:null},
-    {name:'Sèries de longitud — crol continu',tip:'10 m + tornada = 1 sèrie. Descans 30 seg',sets:'10 sèries',img:null},
-    {name:'Aquajògging lateral',tip:"Corre lateralment d'una paret a l'altra",sets:'3 × 3 min',img:null},
-    {name:'Sèries braça o esquena',tip:"Varia l'estil per activar musculatura diferent",sets:'6 sèries',img:null},
-    {name:"Estiraments dins l'aigua",tip:'Agafa la paret, estira isquiotibials i esquena',sets:'5 min',img:null}
-  ]},
-  {label:'Dijous · HIIT aquàtic',dur:'45 min · ~650 kcal · Alta intensitat',exercises:[
-    {name:'Escalfament — crol suau',tip:'Ritme molt relaxat',sets:'5 min',img:null},
-    {name:'HIIT: sprint 10 m + pausa',tip:'Màxima intensitat 10 m, descans 30 seg',sets:'10 × 10 m',img:null},
-    {name:'Kicking a la paret',tip:'Patades de crol 30 seg màxima velocitat',sets:'5 × 30 seg',img:null},
-    {name:'Aquajògging ràpid',tip:"D'una paret a l'altra, alt genoll",sets:'4 × 2 min',img:null},
-    {name:'Crol suau de recuperació',tip:'Baixa la freqüència cardíaca gradualment',sets:'4 sèries',img:null}
-  ]},
-  {label:'Dissabte · Sessió llarga',dur:'60 min · ~750 kcal · 15:00–16:00',exercises:[
-    {name:'Escalfament progressiu',tip:'Comença suau, augmenta cada 2 min',sets:'8 min',img:null},
-    {name:'Crol continu — zona aeròbica',tip:'Ritme que et permeti parlar amb esforç',sets:'20 min',img:null},
-    {name:'Circuit aquàtic (x4)',tip:'Aquajog+kicking+sprint+descans',sets:'4 rounds',img:null},
-    {name:'Treball de braços — pull',tip:'Cames immòbils, braços purs',sets:'6 sèries',img:null},
-    {name:'Baixada de ritme — neda lliure',tip:'Molt suau, recuperació final',sets:'8 min',img:null}
-  ]}
+const sessions = {
+  handball:{
+    dur:'90 min · 21:00–22:30 · ~750 kcal',
+    intro:'Sessió dirigida pel club. Arribes de classe a les 20:30, tens 30 min per sopar lleuger i desplaçar-te.',
+    exercises:[
+      {name:'Gimnàs de cos sencer',tip:'Els 30 min dirigits pel club. Prioritza tècnica per sobre de càrrega — ja tens prou volum setmanal.',sets:'30 min',img:'handbol_gimnas.jpg'},
+      {name:'Escalfament específic i tècnica',tip:'Passades, recepcions, desplaçaments. Aprofita per activar bé l\'espatlla abans de llençar fort.',sets:'20 min',img:'handbol_tecnica.jpg'},
+      {name:'Tàctica i situacions de joc',tip:'Treball posicional, 2×2, 3×3, contraatac.',sets:'25 min',img:'handbol_tactica.jpg'},
+      {name:'Partidet / joc lliure',tip:'Intensitat alta. És on es crema la major part de les calories de la sessió.',sets:'15 min',img:'handbol_partit.jpg'},
+      {name:'Estiraments i tornada a la calma',tip:'5–10 min. Isquiotibials, bessons, psoes i espatlla. No te\'ls saltis a les 22:30 — són els que et deixen fresc l\'endemà.',sets:'inclòs',img:'estiraments.jpg'},
+      {name:'Recuperació post-entreno',tip:'Sopar amb proteïna (30–40 g) i hidrats dins la primera hora. Hidrata\'t bé: pots perdre 1–1,5 L de suor.',sets:'després',img:'recuperacio.jpg'}
+    ]
+  },
+  gym:{
+    dur:'60 min · 20:45–21:45 · ~450 kcal',
+    intro:'L\'única sessió de força pròpia de la setmana. L\'objectiu NO és cremar calories — és fer-te més fort i blindar-te contra lesions. Descansos de 90 seg entre sèries.',
+    exercises:[
+      {name:'Escalfament i mobilitat',tip:'Bici o el·líptica suau 5 min + mobilitat de maluc, turmell i espatlla.',sets:'8 min',img:'escalfament_bici.jpg'},
+      {name:'Pes mort romanès amb barra',tip:'Cadena posterior. El factor nº1 de prevenció de lesió al genoll en esports de canvis de direcció. Esquena neutra, nota l\'estirament.',sets:'4 × 8',img:'pes_mort.jpg'},
+      {name:'Estocada búlgara amb mancuernes',tip:'Peu del darrere al banc. L\'handbol és un esport d\'una sola cama: salts, recolzaments i girs unilaterals.',sets:'3 × 8 c/u',img:'estocada_bulgara.jpg'},
+      {name:'Curl nòrdic (o curl femoral)',tip:'Baixa el més lent possible. L\'exercici amb més evidència per prevenir lesió d\'isquiotibial.',sets:'3 × 6',img:'curl_nordic.jpg'},
+      {name:'Rem amb mancuerna unilateral',tip:'Equilibra la musculatura del llançament. Genoll al banc, esquena paral·lela al terra.',sets:'3 × 10 c/u',img:'rem_mancuerna.jpg'},
+      {name:'Rotacions externes amb goma',tip:'Manegot dels rotadors. Llences 3 cops per setmana: aquesta articulació necessita manteniment, no més càrrega.',sets:'3 × 15 c/u',img:'rotacions_externes.jpg'},
+      {name:'Face pull en politja',tip:'Salut d\'espatlla i postura. Colzes alts, obre bé cap enrere.',sets:'3 × 15',img:'face_pull.jpg'},
+      {name:'Pallof press',tip:'Core anti-rotació. Transferència directa al llançament i al bloqueig defensiu.',sets:'3 × 12 c/u',img:'pallof_press.jpg'},
+      {name:'Elevació de bessons',tip:'Estabilitat del turmell — l\'articulació que més es lesiona a pista.',sets:'3 × 15',img:'bessons.jpg'}
+    ]
+  },
+  recovery:{
+    dur:'60–75 min · hora flexible · ~200 kcal',
+    intro:'Dia deliberadament suau. Vens de gimnàs dimecres, tens handbol divendres i partit diumenge. Avui es recupera, no s\'entrena.',
+    exercises:[
+      {name:'Passejada a ritme còmode',tip:'45–60 min. Has de poder parlar sense esforç. Millor al aire lliure que a la cinta.',sets:'45–60 min',img:'passejada.jpg'},
+      {name:'Mobilitat de maluc',tip:'90/90, estocada amb rotació, cercles de maluc. 5 min.',sets:'5 min',img:'mobilitat_maluc.jpg'},
+      {name:'Estiraments isquiotibials i bessons',tip:'30 seg per posició, sense rebots. Les cames carreguen molt amb 3 handbols setmanals.',sets:'5 min',img:'estiraments_cames.jpg'},
+      {name:'Mobilitat d\'espatlla',tip:'Cercles amb pal o goma, estirament de pectoral a la paret. Compensa el volum de llançaments.',sets:'5 min',img:'mobilitat_espatlla.jpg'},
+      {name:'El que NO has de fer avui',tip:'Res de força, res de HIIT, res de córrer fort. Si arribes cansat, redueix la passejada i prou.',sets:'—',img:null}
+    ]
+  },
+  match:{
+    dur:'Dia de competició · ~650 kcal',
+    intro:'El dia més important de la setmana. Tot el que fas de dilluns a divendres és per arribar bé aquí.',
+    exercises:[
+      {name:'Esmorzar / àpat pre-partit',tip:'3 h abans. Hidrats de digestió fàcil (arròs, pasta, pa) + proteïna moderada. Poc greix i poca fibra.',sets:'−3 h',img:'apat_prepartit.jpg'},
+      {name:'Hidratació',tip:'Comença el partit ben hidratat: 500 ml 2 h abans i petits glops fins a l\'escalfament.',sets:'−2 h',img:'hidratacio.jpg'},
+      {name:'Escalfament previ',tip:'15–20 min: activació, desplaçaments, passades progressives i llançaments de menys a més.',sets:'20 min',img:'escalfament_partit.jpg'},
+      {name:'Partit',tip:'Aquí no hi ha res a calcular. Juga.',sets:'—',img:'partit.jpg'},
+      {name:'Tornada a la calma',tip:'10 min de trot molt suau i estiraments. Redueix moltíssim les agulletes de dilluns.',sets:'10 min',img:'tornada_calma.jpg'},
+      {name:'Recàrrega post-partit',tip:'Proteïna + hidrats dins la primera hora. Demà ja tornes a entrenar.',sets:'després',img:'recuperacio.jpg'}
+    ]
+  },
+  rest:{
+    dur:'Descans total',
+    intro:'Zero entrenament. El múscul no creix entrenant, creix descansant — i demà tens partit.',
+    exercises:[
+      {name:'Descans complet',tip:'Cap sessió estructurada. Vida normal, camina si vols, però res programat.',sets:'—',img:null},
+      {name:'Dormir bé',tip:'8 h si pots. És la variable que més afecta el rendiment de demà i la recuperació de tota la setmana.',sets:'8 h',img:null},
+      {name:'Preparar el partit',tip:'Deixa la bossa feta, hidrata\'t durant el dia i sopa bé amb hidrats.',sets:'—',img:null}
+    ]
+  }
+};
+
+const kcalPerDay = [
+  {lbl:'DILLUNS · Handbol',val:'~750 kcal'},
+  {lbl:'DIMARTS · Handbol',val:'~750 kcal'},
+  {lbl:'DIMECRES · Gimnàs',val:'~450 kcal'},
+  {lbl:'DIJOUS · Descans actiu',val:'~200 kcal'},
+  {lbl:'DIVENDRES · Handbol',val:'~750 kcal'},
+  {lbl:'DISSABTE · Descans',val:'0 kcal'},
+  {lbl:'DIUMENGE · Partit',val:'~650 kcal'},
+  {lbl:'TOTAL SETMANAL',val:'~3.550 kcal'}
 ];
 
 /* ============================================================
-   FIREBASE (persistència real, sincronitzada)
+   FIREBASE
    ============================================================ */
 var firebaseConfig = {
   apiKey: "AIzaSyAbtw6K357bVRP34Bo90ZBaVIuoaE4onks",
@@ -398,27 +502,15 @@ dbRef.on('value', function(snapshot){
    HELPERS
    ============================================================ */
 function todayStr(){ return new Date().toISOString().split('T')[0]; }
+function isoDate(d){ return d.toISOString().split('T')[0]; }
 function fmtDate(s){ const p=s.split('-'); return p[2]+'/'+p[1]+'/'+p[0].slice(2); }
+function fmtLong(d){ return d.toLocaleDateString('ca-ES',{day:'2-digit',month:'short',year:'2-digit'}); }
 function sortedEntries(){ return Object.keys(weightLog).sort().map(k=>[k,weightLog[k]]); }
 function currentWeight(){ const e=sortedEntries(); return e.length? e[e.length-1][1] : START_WEIGHT; }
 function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
-
-function linearRegression(entries){
-  if(entries.length<2) return null;
-  const t0 = new Date(entries[0][0]).getTime();
-  const pts = entries.map(([d,w])=>[ (new Date(d).getTime()-t0)/86400000, w ]);
-  const n = pts.length;
-  const sx = pts.reduce((a,p)=>a+p[0],0), sy = pts.reduce((a,p)=>a+p[1],0);
-  const sxx = pts.reduce((a,p)=>a+p[0]*p[0],0), sxy = pts.reduce((a,p)=>a+p[0]*p[1],0);
-  const denom = (n*sxx - sx*sx);
-  if(denom===0) return null;
-  const slope = (n*sxy - sx*sy)/denom;
-  const intercept = (sy - slope*sx)/n;
-  return {slope, intercept, t0, lastT: pts[pts.length-1][0]};
-}
-
+function daysBetween(a,b){ return Math.round((new Date(b)-new Date(a))/86400000); }
+function todayDow(){ const d=new Date().getDay(); return d===0?7:d; }
 function getMonday(d){ const day=(d.getDay()+6)%7; const r=new Date(d); r.setDate(d.getDate()-day); r.setHours(0,0,0,0); return r; }
-function isoDate(d){ return d.toISOString().split('T')[0]; }
 function currentWeekDates(){ const mon=getMonday(new Date()); return Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;}); }
 function isoWeekKey(dateStr){
   const d=new Date(dateStr); d.setHours(0,0,0,0);
@@ -427,373 +519,644 @@ function isoWeekKey(dateStr){
   const wk=1+Math.round(((d-w1)/86400000-3+((w1.getDay()+6)%7))/7);
   return d.getFullYear()+'-S'+String(wk).padStart(2,'0');
 }
-function todayDow(){ const d=new Date().getDay(); return d===0?7:d; }
+
+/* ---- EMA: filtra el soroll diari (aigua, glucogen, suor) ---- */
+function emaSeries(entries, alpha){
+  let ema = null;
+  return entries.map(([d,w])=>{
+    ema = (ema===null) ? w : alpha*w + (1-alpha)*ema;
+    return [d, +ema.toFixed(3)];
+  });
+}
+function currentEMA(){
+  const e = sortedEntries();
+  if(!e.length) return null;
+  const s = emaSeries(e, EMA_ALPHA);
+  return s[s.length-1][1];
+}
+
+/* ---- Regressió lineal ponderada per recència ---- */
+function weightedRegression(entries, halfLife){
+  if(entries.length<3) return null;
+  const t0 = new Date(entries[0][0]).getTime();
+  const tLast = new Date(entries[entries.length-1][0]).getTime();
+  const pts = entries.map(([d,w])=>{
+    const tm = new Date(d).getTime();
+    const t = (tm-t0)/86400000;
+    const age = (tLast-tm)/86400000;
+    return {t, y:w, wt:Math.pow(0.5, age/halfLife)};
+  });
+  const sw  = pts.reduce((a,p)=>a+p.wt,0);
+  const sx  = pts.reduce((a,p)=>a+p.wt*p.t,0);
+  const sy  = pts.reduce((a,p)=>a+p.wt*p.y,0);
+  const sxx = pts.reduce((a,p)=>a+p.wt*p.t*p.t,0);
+  const sxy = pts.reduce((a,p)=>a+p.wt*p.t*p.y,0);
+  const denom = sw*sxx - sx*sx;
+  if(Math.abs(denom)<1e-9) return null;
+  const slope = (sw*sxy - sx*sy)/denom;
+  const intercept = (sy - slope*sx)/sw;
+  const meanY = sy/sw;
+  let ssRes=0, ssTot=0;
+  pts.forEach(p=>{
+    const pred = intercept + slope*p.t;
+    ssRes += p.wt*Math.pow(p.y-pred,2);
+    ssTot += p.wt*Math.pow(p.y-meanY,2);
+  });
+  const r2 = ssTot>0 ? clamp(1-ssRes/ssTot,0,1) : 0;
+  const n = pts.length;
+  const seSlope = n>2 ? Math.sqrt(Math.abs((ssRes/(n-2))*sw/denom)) : 0;
+  return {slope,intercept,t0,lastT:pts[n-1].t,r2,seSlope,n,lastDate:new Date(entries[n-1][0])};
+}
+
+/* ---- Ritme de les últimes N setmanes (regressió simple) ---- */
+function recentRate(weeks){
+  const all = sortedEntries();
+  const cutoff = Date.now() - weeks*7*86400000;
+  const sub = all.filter(([d])=> new Date(d).getTime()>=cutoff);
+  if(sub.length<3) return null;
+  const t0 = new Date(sub[0][0]).getTime();
+  const pts = sub.map(([d,w])=>[(new Date(d).getTime()-t0)/86400000, w]);
+  const n=pts.length;
+  const sx=pts.reduce((a,p)=>a+p[0],0), sy=pts.reduce((a,p)=>a+p[1],0);
+  const sxx=pts.reduce((a,p)=>a+p[0]*p[0],0), sxy=pts.reduce((a,p)=>a+p[0]*p[1],0);
+  const den=n*sxx-sx*sx;
+  if(Math.abs(den)<1e-9) return null;
+  return ((n*sxy-sx*sy)/den)*7; // kg/setmana
+}
+
 function imgFallback(el){
   const ph=document.createElement('div');
   ph.className='ex-img-ph';
-  ph.textContent=el.getAttribute('data-name-file')||el.src.split('/').pop();
+  ph.textContent=el.getAttribute('data-name-file')||'sense foto';
   ph.onclick=function(){ openLightbox('', el.alt); };
   el.replaceWith(ph);
 }
 
 /* ============================================================
-   RENDER: EXERCICIS I PLA SETMANAL
+   PLA SETMANAL
    ============================================================ */
 let selectedDow = todayDow();
 
-function exCard(ex, idx){
+function exCard(ex, idx, color){
   const media = ex.img
     ? '<img class="ex-img" src="'+ex.img+'" alt="'+ex.name+'" loading="lazy" data-name-file="'+ex.img+'" onerror="imgFallback(this)" onclick="openLightbox(\''+ex.img+'\',\''+ex.name.replace(/'/g,"")+'\')">'
-    : '<div class="ex-img-ph" onclick="openLightbox(\'\',\''+ex.name.replace(/'/g,"")+'\')">sense foto<br>'+ (ex.name.split(' ')[0]) +'</div>';
+    : '<div class="ex-img-ph" onclick="openLightbox(\'\',\''+ex.name.replace(/'/g,"")+'\')">sense foto</div>';
   return '<div class="ex-card"><div class="ex-media">'+media+'</div>'+
-    '<div class="ex-body"><div class="ex-head"><span class="ex-idx">'+idx+'</span><h4>'+ex.name+'</h4><span class="ex-sets">'+ex.sets+'</span></div>'+
+    '<div class="ex-body"><div class="ex-head"><span class="ex-idx">'+idx+'</span><h4>'+ex.name+'</h4>'+
+    '<span class="ex-sets" style="color:'+color+'">'+ex.sets+'</span></div>'+
     '<p class="ex-tip">'+ex.tip+'</p></div></div>';
 }
 
 function renderCalendar(){
   const dates = currentWeekDates();
+  const tDow = todayDow();
   document.getElementById('calGrid').innerHTML = weekPlan.map((day,i)=>{
     const d=dates[i];
     const sel = day.dow===selectedDow ? ' selected':'';
-    return '<div class="cal-day '+day.type+sel+'" onclick="selectDay('+day.dow+')">'+
+    const tod = day.dow===tDow ? ' today':'';
+    return '<div class="cal-day '+day.type+sel+tod+'" onclick="selectDay('+day.dow+')">'+
       '<div class="cd-name">'+day.day+'</div><div class="cd-date">'+String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'</div>'+
       '<div class="cd-icon">'+day.icon+'</div><div class="cd-title">'+day.title+'</div>'+
-      '<div class="cd-kcal">~'+day.kcal+' kcal</div></div>';
+      '<div class="cd-kcal">'+(day.kcal?'~'+day.kcal+' kcal':'—')+'</div></div>';
   }).join('');
 }
 function selectDay(dow){ selectedDow=dow; renderCalendar(); renderDayDetail(dow); }
 
+const typeColors = {handball:'#7c3aed',gym:'#16a34a',recovery:'#0284c7',match:'#dc2626',rest:'#64748b'};
+const typeIcons  = {handball:'🤾',gym:'💪',recovery:'🚶',match:'🏆',rest:'😴'};
+
 function renderDayDetail(dow){
   const day = weekPlan.find(d=>d.dow===dow);
-  const wrap = document.getElementById('dayDetailWrap');
-  if(day.type==='rest'){
-    wrap.innerHTML = '<div class="card" style="padding:30px 20px;text-align:center;color:var(--muted);">'+
-      '<div style="font-size:26px;margin-bottom:8px;">😌</div><b style="color:var(--text);">Dia de descans actiu</b><br>Passejada suau de 45–60 min. Aprofita per recuperar.</div>';
-    return;
-  }
-  const session = day.type==='gym' ? gymSessions[gymByDow[dow]] : poolSessions[poolByDow[dow]];
-  const tagClass = day.type==='gym' ? 'gym' : 'pool';
-  const icon = day.type==='gym' ? '💪' : '🏊';
-  wrap.innerHTML = '<div class="card"><div style="padding:16px 18px 0;"><span class="dur-tag '+tagClass+'">'+icon+' '+session.dur+'</span></div>'+
-    '<div class="ex-grid" style="padding:16px 18px 18px;">'+session.exercises.map((ex,i)=>exCard(ex,i)).join('')+'</div></div>';
+  const s = sessions[day.type];
+  const color = typeColors[day.type];
+  document.getElementById('dayDetailWrap').innerHTML =
+    '<div class="card"><div style="padding:16px 18px 0;">'+
+      '<span class="dur-tag '+day.type+'">'+typeIcons[day.type]+' '+day.day+' · '+s.dur+'</span>'+
+      '<p style="font-size:12.5px;color:var(--muted);line-height:1.7;margin-bottom:4px;">'+s.intro+'</p>'+
+    '</div>'+
+    '<div class="ex-grid" style="padding:16px 18px 18px;">'+s.exercises.map((ex,i)=>exCard(ex,i+1,color)).join('')+'</div></div>';
 }
 
 /* ============================================================
    LIGHTBOX
    ============================================================ */
-function openLightbox(src, name){
-  const c = document.getElementById('lightboxContent');
+function openLightbox(src,name){
+  const c=document.getElementById('lightboxContent');
   if(src){
-    c.innerHTML = '<img class="lightbox-img" src="'+src+'" alt="'+name+'" onerror="this.parentElement.innerHTML=\'<div style=padding:40px;text-align:center;color:var(--dim)>Imatge no trobada:<br><b>'+src+'</b><br><br>Desa la foto amb aquest nom a la mateixa carpeta.</div>\'"><p style="text-align:center;margin-top:12px;font-weight:700;">'+name+'</p>';
+    c.innerHTML='<img class="lightbox-img" src="'+src+'" alt="'+name+'" onerror="this.parentElement.innerHTML=\'<div style=padding:40px;text-align:center;color:#9aa1ac>Imatge no trobada:<br><b>'+src+'</b><br><br>Desa la foto amb aquest nom a la mateixa carpeta.</div>\'"><p style="text-align:center;margin-top:12px;font-weight:700;">'+name+'</p>';
   } else {
-    c.innerHTML = '<div style="padding:40px;text-align:center;color:var(--dim);">📷 Encara no hi ha foto per <b>'+name+'</b></div>';
+    c.innerHTML='<div style="padding:40px;text-align:center;color:var(--dim);">📷 Encara no hi ha foto per <b>'+name+'</b></div>';
   }
   document.getElementById('lightbox').classList.add('open');
 }
 function closeLightbox(){ document.getElementById('lightbox').classList.remove('open'); }
 
 /* ============================================================
-   RESUM / OBJECTIUS / PREDICCIO / ESTADISTIQUES
+   RESUM
    ============================================================ */
-function animateNumber(el, target, decimals, suffix){
-  const start = 0, dur=900, t0=performance.now();
+function animateNumber(el,target,decimals,suffix){
+  const dur=900,t0=performance.now();
   function step(t){
-    const p = Math.min(1,(t-t0)/dur);
-    const eased = 1-Math.pow(1-p,3);
-    const val = start + (target-start)*eased;
-    el.textContent = val.toFixed(decimals) + (suffix||'');
+    const p=Math.min(1,(t-t0)/dur);
+    const eased=1-Math.pow(1-p,3);
+    el.textContent=(target*eased).toFixed(decimals)+(suffix||'');
     if(p<1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
 }
 function streakDays(){
-  const keys = Object.keys(weightLog).sort();
+  const keys=Object.keys(weightLog).sort();
   if(!keys.length) return 0;
-  let streak=1;
-  let cur = new Date(keys[keys.length-1]);
+  let streak=1, cur=new Date(keys[keys.length-1]);
   for(let i=keys.length-2;i>=0;i--){
-    const prev = new Date(keys[i]);
-    const diff = Math.round((cur-prev)/86400000);
-    if(diff===1){ streak++; cur=prev; } else break;
+    const prev=new Date(keys[i]);
+    if(Math.round((cur-prev)/86400000)===1){ streak++; cur=prev; } else break;
   }
   return streak;
 }
-function daysLeftInWeek(){
-  const today = new Date().getDay();
-  const iso = today===0?7:today;
-  return 7-iso;
+function longestStreak(){
+  const keys=Object.keys(weightLog).sort();
+  if(!keys.length) return 0;
+  let best=1,cur=1;
+  for(let i=1;i<keys.length;i++){
+    if(daysBetween(keys[i-1],keys[i])===1){ cur++; best=Math.max(best,cur); } else cur=1;
+  }
+  return best;
 }
+function daysLeftInWeek(){ const d=new Date().getDay(); return 7-(d===0?7:d); }
+
 function renderDashboard(){
-  const cw = currentWeight();
-  const lost = (START_WEIGHT-cw);
-  const pct = clamp((lost/(START_WEIGHT-MAIN_GOAL))*100,0,100);
-  const stats = [
+  const cw=currentWeight();
+  const lost=START_WEIGHT-cw;
+  const pct=clamp((lost/(START_WEIGHT-MAIN_GOAL))*100,0,100);
+  const ema=currentEMA();
+  const stats=[
     {lbl:'PES ACTUAL',val:cw.toFixed(2),suf:' kg'},
+    {lbl:'PES SUAVITZAT',val:(ema!==null?ema:cw).toFixed(2),suf:' kg'},
     {lbl:'PES INICIAL',val:START_WEIGHT,suf:' kg'},
     {lbl:'OBJECTIU',val:MAIN_GOAL,suf:' kg'},
     {lbl:'KG PERDUTS',val:lost.toFixed(2),suf:' kg'},
     {lbl:'% COMPLETAT',val:pct.toFixed(0),suf:'%'},
     {lbl:'RATXA DE REGISTRE',val:streakDays(),suf:' dies'},
-    {lbl:'DIES RESTANTS SETMANA',val:daysLeftInWeek(),suf:''}
+    {lbl:'DIES RESTANTS SETM.',val:daysLeftInWeek(),suf:''}
   ];
-  document.getElementById('dashStats').innerHTML = stats.map(s=>
+  document.getElementById('dashStats').innerHTML=stats.map(s=>
     '<div class="stat-box"><div class="lbl">'+s.lbl+'</div><div class="val" data-target="'+s.val+'" data-suf="'+s.suf+'">0</div></div>'
   ).join('');
   document.querySelectorAll('#dashStats .val').forEach(el=>{
-    const raw = el.getAttribute('data-target');
-    const t = parseFloat(raw);
-    const dec = raw.includes('.') ? (raw.split('.')[1]||'').length : 0;
-    animateNumber(el, isNaN(t)?0:t, dec, el.getAttribute('data-suf'));
+    const raw=el.getAttribute('data-target'), t=parseFloat(raw);
+    const dec=raw.includes('.')?(raw.split('.')[1]||'').length:0;
+    animateNumber(el,isNaN(t)?0:t,dec,el.getAttribute('data-suf'));
   });
-  document.getElementById('deficitFill').style.width='65.3%';
+  document.getElementById('deficitFill').style.width='70%';
+  document.getElementById('kcalGrid').innerHTML=kcalPerDay.map(k=>
+    '<div class="adv-cell"><div class="a-lbl">'+k.lbl+'</div><div class="a-val">'+k.val+'</div></div>'
+  ).join('');
 }
+
+/* ============================================================
+   OBJECTIUS
+   ============================================================ */
 function renderGoals(){
-  const cw = currentWeight();
-  const html = GOALS.map(g=>{
-    const pct = clamp(((START_WEIGHT-cw)/(START_WEIGHT-g))*100,0,100);
-    const done = cw<=g;
+  const cw=currentWeight();
+  document.getElementById('goalList').innerHTML=GOALS.map(g=>{
+    const pct=clamp(((START_WEIGHT-cw)/(START_WEIGHT-g))*100,0,100);
+    const done=cw<=g;
     return '<div class="goal-item"><div class="goal-top"><span>Arribar a '+g+' kg</span><span class="pct">'+pct.toFixed(0)+'%</span></div>'+
       '<div class="goal-track"><div class="goal-fill'+(done?' done':'')+'" data-w="'+pct+'"></div></div>'+
-      '<div class="goal-sub">'+(done? '✓ Objectiu assolit' : 'Falten '+Math.max(0,(cw-g)).toFixed(1)+' kg')+'</div></div>';
+      '<div class="goal-sub">'+(done?'✓ Objectiu assolit':'Falten '+Math.max(0,cw-g).toFixed(2)+' kg')+'</div></div>';
   }).join('');
-  document.getElementById('goalList').innerHTML = html;
   requestAnimationFrame(()=>{
-    document.querySelectorAll('.goal-fill').forEach(el=>{ el.style.width = el.getAttribute('data-w')+'%'; });
+    document.querySelectorAll('.goal-fill').forEach(el=>{ el.style.width=el.getAttribute('data-w')+'%'; });
   });
-}
-function renderPrediction(){
-  const entries = sortedEntries();
-  const reg = linearRegression(entries);
-  const grid = document.getElementById('predGrid');
-  if(!reg || reg.slope>=0){
-    grid.innerHTML = '<div class="pred-box" style="grid-column:1/-1;"><div class="p-lbl">PREDICCIÓ</div><div class="p-val" style="font-size:13px;">Registra pes durant uns dies per veure la predicció de tendència.</div></div>';
-    return;
-  }
-  const weeklyRate = (-reg.slope*7).toFixed(2);
-  const lastDate = new Date(entries[entries.length-1][0]);
-  const boxes = [{lbl:'RITME SETMANAL',val:weeklyRate+' kg',sub:'de mitjana'}];
-  GOALS.forEach(g=>{
-    const tGoal = (g - reg.intercept)/reg.slope;
-    if(tGoal <= reg.lastT){
-      boxes.push({lbl:'OBJECTIU '+g+'KG',val:'✓ Assolit',sub:''});
-    } else {
-      const daysAhead = Math.round(tGoal - reg.lastT);
-      const d = new Date(lastDate); d.setDate(d.getDate()+daysAhead);
-      boxes.push({lbl:'DATA PER '+g+'KG',val:d.toLocaleDateString('ca-ES',{day:'2-digit',month:'short'}),sub:daysAhead+' dies'});
-    }
-  });
-  grid.innerHTML = boxes.map(b=>'<div class="pred-box"><div class="p-lbl">'+b.lbl+'</div><div class="p-val">'+b.val+'</div><div class="p-sub">'+b.sub+'</div></div>').join('');
-}
-function renderAdvancedStats(){
-  const entries = sortedEntries();
-  const grid = document.getElementById('advGrid');
-  if(entries.length<2){
-    grid.innerHTML = '<div class="adv-cell" style="grid-column:1/-1;"><div class="a-lbl">ESTADÍSTIQUES</div><div class="a-val" style="font-size:13px;">Calen almenys 2 registres.</div></div>';
-    return;
-  }
-  const weights = entries.map(e=>e[1]);
-  const minW = Math.min(...weights), maxW = Math.max(...weights);
-  let biggestDrop = 0, biggestDropDate='';
-  for(let i=1;i<entries.length;i++){
-    const diff = entries[i][1]-entries[i-1][1];
-    if(diff<biggestDrop){ biggestDrop=diff; biggestDropDate=entries[i][0]; }
-  }
-  const weeks = {};
-  entries.forEach(([d,w])=>{ const wk=isoWeekKey(d); if(!weeks[wk]) weeks[wk]=[]; weeks[wk].push(w); });
-  const wKeys = Object.keys(weeks).sort();
-  const wAvgs = wKeys.map(k=>weeks[k].reduce((a,b)=>a+b,0)/weeks[k].length);
-  let bestWeek=null,bestDelta=0,worstWeek=null,worstDelta=0;
-  for(let i=1;i<wAvgs.length;i++){
-    const delta = wAvgs[i]-wAvgs[i-1];
-    if(delta<bestDelta || bestWeek===null){ bestDelta=delta; bestWeek=wKeys[i]; }
-    if(delta>worstDelta || worstWeek===null){ worstDelta=delta; worstWeek=wKeys[i]; }
-  }
-  const avgWeeklyLoss = wAvgs.length>1 ? ((wAvgs[0]-wAvgs[wAvgs.length-1])/(wAvgs.length-1)).toFixed(2) : '—';
-  const cells = [
-    {lbl:'MITJANA PÈRDUA/SETMANA',val:avgWeeklyLoss+' kg'},
-    {lbl:'MILLOR SETMANA',val:bestWeek?bestWeek+' ('+bestDelta.toFixed(2)+' kg)':'—'},
-    {lbl:'PITJOR SETMANA',val:worstWeek?worstWeek+' ('+(worstDelta>0?'+':'')+worstDelta.toFixed(2)+' kg)':'—'},
-    {lbl:'MAJOR DESCENS EN 1 DIA',val:biggestDrop<0?biggestDrop.toFixed(1)+' kg':'—',sub:biggestDropDate},
-    {lbl:'PES MÍNIM REGISTRAT',val:minW.toFixed(1)+' kg'},
-    {lbl:'PES MÀXIM REGISTRAT',val:maxW.toFixed(1)+' kg'},
-    {lbl:'TOTAL DE REGISTRES',val:entries.length}
-  ];
-  grid.innerHTML = cells.map(c=>'<div class="adv-cell"><div class="a-lbl">'+c.lbl+'</div><div class="a-val">'+c.val+'</div></div>').join('');
 }
 
 /* ============================================================
-   REGISTRE DE PES (Firebase)
+   PREDICCIÓ
    ============================================================ */
+function renderPrediction(){
+  const entries=sortedEntries();
+  const grid=document.getElementById('predGrid');
+  const qual=document.getElementById('predQuality');
+  const reg=weightedRegression(entries,HALF_LIFE_DAYS);
+
+  if(!reg||reg.slope>=0){
+    qual.textContent='';
+    grid.innerHTML='<div class="pred-box" style="grid-column:1/-1;"><div class="p-lbl">PREDICCIÓ</div><div class="p-val" style="font-size:13px;">'+
+      (entries.length<3?'Calen almenys 3 registres per calcular la tendència.':'La tendència actual no és descendent. Registra uns dies més.')+'</div></div>';
+    return;
+  }
+
+  const rateWeek = -reg.slope*7;
+  const r2 = reg.r2;
+  const qLabel = r2>=0.7?'Fiabilitat alta':(r2>=0.4?'Fiabilitat mitjana':'Fiabilitat baixa');
+  const qColor = r2>=0.7?'var(--gym)':(r2>=0.4?'var(--warn)':'var(--danger)');
+  qual.innerHTML='<span style="color:'+qColor+';font-weight:700;">'+qLabel+' · R² '+r2.toFixed(2)+'</span>';
+
+  const r4 = recentRate(4);
+  const boxes=[
+    {lbl:'RITME PONDERAT',val:rateWeek.toFixed(2)+' kg',sub:'per setmana'},
+    {lbl:'RITME ÚLTIMES 4 SETM.',val:(r4!==null?(-r4).toFixed(2)+' kg':'—'),sub:(r4!==null?'per setmana':'poques dades')}
+  ];
+
+  GOALS.forEach(g=>{
+    const tGoal=(g-reg.intercept)/reg.slope;
+    if(tGoal<=reg.lastT){
+      boxes.push({lbl:'OBJECTIU '+g+' KG',val:'✓ Assolit',sub:''});
+      return;
+    }
+    const daysAhead=Math.round(tGoal-reg.lastT);
+    const d=new Date(reg.lastDate); d.setDate(d.getDate()+daysAhead);
+
+    // marge segons l'error estàndard del pendent
+    let margin='';
+    const sFast=reg.slope-reg.seSlope, sSlow=reg.slope+reg.seSlope;
+    if(sFast<0 && sSlow<0){
+      const dFast=Math.round((g-reg.intercept)/sFast-reg.lastT);
+      const dSlow=Math.round((g-reg.intercept)/sSlow-reg.lastT);
+      const a=new Date(reg.lastDate); a.setDate(a.getDate()+dFast);
+      const b=new Date(reg.lastDate); b.setDate(b.getDate()+dSlow);
+      margin=fmtLong(a)+' – '+fmtLong(b);
+    } else {
+      margin=daysAhead+' dies · ~'+(daysAhead/7).toFixed(0)+' setmanes';
+    }
+    boxes.push({lbl:'DATA PER '+g+' KG',val:fmtLong(d),sub:margin});
+  });
+
+  grid.innerHTML=boxes.map(b=>'<div class="pred-box"><div class="p-lbl">'+b.lbl+'</div><div class="p-val">'+b.val+'</div><div class="p-sub">'+b.sub+'</div></div>').join('');
+}
+
+/* ============================================================
+   ESTADÍSTIQUES AVANÇADES
+   ============================================================ */
+function renderAdvancedStats(){
+  const entries=sortedEntries();
+  const grid=document.getElementById('advGrid');
+  if(entries.length<2){
+    grid.innerHTML='<div class="adv-cell" style="grid-column:1/-1;"><div class="a-lbl">ESTADÍSTIQUES</div><div class="a-val" style="font-size:13px;">Calen almenys 2 registres.</div></div>';
+    return;
+  }
+  const weights=entries.map(e=>e[1]);
+  const minW=Math.min(...weights), maxW=Math.max(...weights);
+  const minD=entries.find(e=>e[1]===minW)[0], maxD=entries.find(e=>e[1]===maxW)[0];
+
+  let bigDrop=0,bigDropD='',bigRise=0,bigRiseD='';
+  for(let i=1;i<entries.length;i++){
+    const diff=entries[i][1]-entries[i-1][1];
+    if(diff<bigDrop){bigDrop=diff;bigDropD=entries[i][0];}
+    if(diff>bigRise){bigRise=diff;bigRiseD=entries[i][0];}
+  }
+
+  const weeks={};
+  entries.forEach(([d,w])=>{ const k=isoWeekKey(d); (weeks[k]=weeks[k]||[]).push(w); });
+  const wKeys=Object.keys(weeks).sort();
+  const wAvgs=wKeys.map(k=>weeks[k].reduce((a,b)=>a+b,0)/weeks[k].length);
+  let bestW=null,bestD=Infinity,worstW=null,worstD=-Infinity;
+  for(let i=1;i<wAvgs.length;i++){
+    const delta=wAvgs[i]-wAvgs[i-1];
+    if(delta<bestD){bestD=delta;bestW=wKeys[i];}
+    if(delta>worstD){worstD=delta;worstW=wKeys[i];}
+  }
+
+  const totalDays=daysBetween(entries[0][0],entries[entries.length-1][0])+1;
+  const adherence=(entries.length/totalDays)*100;
+  const mean=weights.reduce((a,b)=>a+b,0)/weights.length;
+  const sd=Math.sqrt(weights.reduce((a,b)=>a+Math.pow(b-mean,2),0)/weights.length);
+  const reg=weightedRegression(entries,HALF_LIFE_DAYS);
+  const rateWeek=reg&&reg.slope<0?(-reg.slope*7):null;
+  const r4=recentRate(4);
+  const r2w=recentRate(2);
+  const cw=currentWeight();
+  const weeksToGoal=rateWeek&&cw>MAIN_GOAL?((cw-MAIN_GOAL)/rateWeek):null;
+  const ema=currentEMA();
+  const avgWeekly=wAvgs.length>1?((wAvgs[0]-wAvgs[wAvgs.length-1])/(wAvgs.length-1)):null;
+
+  const cells=[
+    {lbl:'Pes suavitzat (EMA)',val:(ema!==null?ema.toFixed(2)+' kg':'—'),sub:'sense soroll diari'},
+    {lbl:'Pèrdua total',val:(START_WEIGHT-cw).toFixed(2)+' kg',sub:((START_WEIGHT-cw)/START_WEIGHT*100).toFixed(1)+'% del pes inicial'},
+    {lbl:'Ritme ponderat',val:(rateWeek!==null?rateWeek.toFixed(2)+' kg/s':'—'),sub:'model de predicció'},
+    {lbl:'Ritme 4 setmanes',val:(r4!==null?(-r4).toFixed(2)+' kg/s':'—'),sub:'tendència recent'},
+    {lbl:'Ritme 2 setmanes',val:(r2w!==null?(-r2w).toFixed(2)+' kg/s':'—'),sub:'molt curt termini'},
+    {lbl:'Mitjana històrica',val:(avgWeekly!==null?avgWeekly.toFixed(2)+' kg/s':'—'),sub:'tota la sèrie'},
+    {lbl:'Fiabilitat (R²)',val:(reg?reg.r2.toFixed(2):'—'),sub:(reg?(reg.r2>=0.7?'alta':(reg.r2>=0.4?'mitjana':'baixa')):'')},
+    {lbl:'Setmanes fins a '+MAIN_GOAL+' kg',val:(weeksToGoal!==null?weeksToGoal.toFixed(1):'—'),sub:'al ritme actual'},
+    {lbl:'Millor setmana',val:(bestW?bestD.toFixed(2)+' kg':'—'),sub:bestW||''},
+    {lbl:'Pitjor setmana',val:(worstW?(worstD>0?'+':'')+worstD.toFixed(2)+' kg':'—'),sub:worstW||''},
+    {lbl:'Major descens 1 dia',val:(bigDrop<0?bigDrop.toFixed(2)+' kg':'—'),sub:bigDropD?fmtDate(bigDropD):''},
+    {lbl:'Major pujada 1 dia',val:(bigRise>0?'+'+bigRise.toFixed(2)+' kg':'—'),sub:bigRiseD?fmtDate(bigRiseD):''},
+    {lbl:'Pes mínim',val:minW.toFixed(2)+' kg',sub:fmtDate(minD)},
+    {lbl:'Pes màxim',val:maxW.toFixed(2)+' kg',sub:fmtDate(maxD)},
+    {lbl:'Volatilitat (σ)',val:sd.toFixed(2)+' kg',sub:'oscil·lació típica'},
+    {lbl:'Adherència',val:adherence.toFixed(0)+'%',sub:entries.length+' de '+totalDays+' dies'},
+    {lbl:'Ratxa actual',val:streakDays()+' dies',sub:'consecutius'},
+    {lbl:'Ratxa més llarga',val:longestStreak()+' dies',sub:'rècord'},
+    {lbl:'Total de registres',val:entries.length,sub:'des de '+fmtDate(entries[0][0])},
+    {lbl:'Dies de seguiment',val:totalDays,sub:'del primer a l\'últim'}
+  ];
+  grid.innerHTML=cells.map(c=>'<div class="adv-cell"><div class="a-lbl">'+c.lbl+'</div><div class="a-val">'+c.val+'</div><div class="a-sub">'+(c.sub||'')+'</div></div>').join('');
+}
+
+/* ============================================================
+   REGISTRE DE PES
+   ============================================================ */
+let histLimit=15, histSort='date', histAsc=false;
+
 function saveWeight(){
-  const date = document.getElementById('weightDate').value;
-  const kg = parseFloat(document.getElementById('weightKg').value);
-  if(!date || isNaN(kg) || kg<30 || kg>300){ alert('Introdueix un pes vàlid (30–300 kg).'); return; }
+  const date=document.getElementById('weightDate').value;
+  const kg=parseFloat(document.getElementById('weightKg').value);
+  if(!date||isNaN(kg)||kg<30||kg>300){ alert('Introdueix un pes vàlid (30–300 kg).'); return; }
   dbRef.child(date).set(kg).then(function(){
-    const msg = document.getElementById('savedMsg');
+    const msg=document.getElementById('savedMsg');
     msg.style.opacity='1'; setTimeout(()=>msg.style.opacity='0',2000);
-  }).catch(function(err){ alert('Error en desar: '+err.message); });
+    document.getElementById('weightKg').value='';
+  }).catch(e=>alert('Error en desar: '+e.message));
 }
-function deleteEntry(date){
-  if(!confirm('Eliminar el registre del '+fmtDate(date)+'?')) return;
-  dbRef.child(date).remove().catch(function(err){ alert('Error en eliminar: '+err.message); });
+function deleteEntry(d){
+  if(!confirm('Eliminar el registre del '+fmtDate(d)+'?')) return;
+  dbRef.child(d).remove().catch(e=>alert('Error: '+e.message));
 }
-function editEntry(date){
-  const cur = weightLog[date];
-  const val = prompt('Nou pes per '+fmtDate(date)+' (kg):', cur);
-  if(val===null) return;
-  const kg = parseFloat(val);
+function editEntry(d){
+  const v=prompt('Nou pes per '+fmtDate(d)+' (kg):',weightLog[d]);
+  if(v===null) return;
+  const kg=parseFloat(v);
   if(isNaN(kg)||kg<30||kg>300){ alert('Valor no vàlid.'); return; }
-  dbRef.child(date).set(kg).catch(function(err){ alert('Error en desar: '+err.message); });
+  dbRef.child(d).set(kg).catch(e=>alert('Error: '+e.message));
 }
 function resetAllData(){
-  if(!confirm('Segur que vols esborrar tot el registre de pes? No es pot desfer.')) return;
-  dbRef.remove().catch(function(err){ alert('Error en esborrar: '+err.message); });
+  if(!confirm('Segur que vols esborrar TOT el registre de pes? No es pot desfer.')) return;
+  dbRef.remove().catch(e=>alert('Error: '+e.message));
+}
+function sortHist(col){
+  if(histSort===col) histAsc=!histAsc; else { histSort=col; histAsc=false; }
+  renderHistory();
+}
+function toggleHistLimit(){
+  histLimit = histLimit===15 ? Infinity : 15;
+  document.getElementById('histToggleBtn').textContent = histLimit===15 ? 'Mostrar tot' : 'Mostrar menys';
+  renderHistory();
 }
 function renderHistory(){
-  const entries = sortedEntries();
-  const tbody = document.getElementById('histBody');
-  if(!entries.length){ tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--dim);padding:20px;">Encara no hi ha registres.</td></tr>'; return; }
-  let html='';
-  for(let i=entries.length-1;i>=0;i--){
-    const [d,w] = entries[i];
-    const prevDiff = i>0 ? (w-entries[i-1][1]) : null;
-    const startDiff = w-START_WEIGHT;
-    html += '<tr><td>'+fmtDate(d)+'</td><td><b>'+w.toFixed(2)+' kg</b></td>'+
-      '<td style="color:'+(prevDiff==null?'var(--dim)':prevDiff<=0?'var(--gym)':'var(--danger)')+'">'+(prevDiff==null?'—':(prevDiff>0?'+':'')+prevDiff.toFixed(2)+' kg')+'</td>'+
-      '<td style="color:'+(startDiff<=0?'var(--gym)':'var(--danger)')+'">'+(startDiff>0?'+':'')+startDiff.toFixed(2)+' kg</td>'+
+  const entries=sortedEntries();
+  const tbody=document.getElementById('histBody');
+  document.getElementById('histCount').textContent = entries.length? '('+entries.length+' registres)' : '';
+  if(!entries.length){ tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--dim);padding:20px;">Encara no hi ha registres.</td></tr>'; return; }
+
+  const prevMap={};
+  entries.forEach((e,i)=>{ prevMap[e[0]] = i>0 ? e[1]-entries[i-1][1] : null; });
+
+  let rows=entries.slice();
+  if(histSort==='weight') rows.sort((a,b)=>a[1]-b[1]);
+  else rows.sort((a,b)=>a[0]<b[0]?-1:1);
+  if(!histAsc) rows.reverse();
+  if(histLimit!==Infinity) rows=rows.slice(0,histLimit);
+
+  tbody.innerHTML=rows.map(([d,w])=>{
+    const pd=prevMap[d], sd=w-START_WEIGHT;
+    return '<tr><td>'+fmtDate(d)+'</td><td><b>'+w.toFixed(2)+' kg</b></td>'+
+      '<td style="color:'+(pd==null?'var(--dim)':pd<=0?'var(--gym)':'var(--danger)')+'">'+(pd==null?'—':(pd>0?'+':'')+pd.toFixed(2)+' kg')+'</td>'+
+      '<td style="color:'+(sd<=0?'var(--gym)':'var(--danger)')+'">'+(sd>0?'+':'')+sd.toFixed(2)+' kg</td>'+
       '<td class="row-actions"><button onclick="editEntry(\''+d+'\')" title="Editar">✏️</button><button onclick="deleteEntry(\''+d+'\')" title="Eliminar">🗑️</button></td></tr>';
-  }
-  tbody.innerHTML = html;
-  const el = document.getElementById('weightLast');
-  const last = entries[entries.length-1];
-  el.innerHTML = 'Últim registre: <b>'+fmtDate(last[0])+'</b> — <b>'+last[1].toFixed(2)+' kg</b>';
+  }).join('');
+
+  const last=entries[entries.length-1];
+  document.getElementById('weightLast').innerHTML='Últim registre: <b>'+fmtDate(last[0])+'</b> — <b>'+last[1].toFixed(2)+' kg</b>';
 }
 
 /* ============================================================
-   GRAFICA
+   GRÀFICA
    ============================================================ */
 let chartInst=null, currentRange='30', currentView='diari';
-function filteredEntries(){
-  const all = sortedEntries();
-  if(currentRange==='all') return all;
-  const days = parseInt(currentRange,10);
-  const cutoff = Date.now() - days*86400000;
-  return all.filter(([d])=> new Date(d).getTime() >= cutoff);
+let customFrom=null, customTo=null;
+const lineVisible={real:true,ema:false,trend:true,pred:true,goal:false};
+
+function rangeBounds(){
+  const all=sortedEntries();
+  if(!all.length) return null;
+  const lastD=new Date(all[all.length-1][0]);
+  if(currentRange==='all') return {from:new Date(all[0][0]), to:lastD, label:'Tot l\'historial'};
+  if(currentRange==='custom'){
+    if(!customFrom||!customTo) return {from:new Date(all[0][0]), to:lastD, label:'Tot l\'historial'};
+    return {from:new Date(customFrom), to:new Date(customTo), label:fmtDate(customFrom)+' → '+fmtDate(customTo)};
+  }
+  const days=parseInt(currentRange,10);
+  const from=new Date(lastD); from.setDate(from.getDate()-days+1);
+  const labels={7:'Últims 7 dies',14:'Últims 14 dies',30:'Últim mes',90:'Últims 3 mesos',180:'Últims 6 mesos'};
+  return {from, to:lastD, label:labels[days]||('Últims '+days+' dies')};
 }
+function filteredEntries(){
+  const b=rangeBounds();
+  if(!b) return [];
+  return sortedEntries().filter(([d])=>{
+    const t=new Date(d).getTime();
+    return t>=b.from.getTime() && t<=b.to.getTime();
+  });
+}
+function applyCustomRange(){
+  const f=document.getElementById('customFrom').value, t=document.getElementById('customTo').value;
+  if(!f||!t){ alert('Tria les dues dates.'); return; }
+  if(new Date(f)>new Date(t)){ alert('La data d\'inici ha de ser anterior a la final.'); return; }
+  customFrom=f; customTo=t; currentRange='custom';
+  renderChart(); renderRangeStats();
+}
+function setQuickCustom(monthsAgo){
+  const now=new Date();
+  const first=new Date(now.getFullYear(), now.getMonth()-monthsAgo, 1);
+  const last=new Date(now.getFullYear(), now.getMonth()-monthsAgo+1, 0);
+  document.getElementById('customFrom').value=isoDate(first);
+  document.getElementById('customTo').value=isoDate(last);
+  applyCustomRange();
+}
+
 function chartOptions(){
   return {
-    responsive:true,
-    maintainAspectRatio:false,
+    responsive:true, maintainAspectRatio:false,
     interaction:{mode:'index',intersect:false},
-    plugins:{legend:{position:'bottom',labels:{color:'#6b7280',font:{family:'Inter',size:11},boxWidth:10,padding:12}}},
+    plugins:{
+      legend:{position:'bottom',labels:{color:'#6b7280',font:{family:'Inter',size:11},boxWidth:10,padding:12}},
+      tooltip:{callbacks:{label:c=>c.dataset.label+': '+(c.parsed.y!=null?c.parsed.y.toFixed(2)+' kg':'—')}}
+    },
     scales:{
-      x:{ticks:{color:'#9aa1ac',font:{size:10}},grid:{color:'#eef0f3'}},
+      x:{ticks:{color:'#9aa1ac',font:{size:10},maxRotation:60,autoSkip:true,maxTicksLimit:14},grid:{color:'#eef0f3'}},
       y:{ticks:{color:'#9aa1ac',font:{size:10},callback:v=>v+' kg'},grid:{color:'#eef0f3'}}
     }
   };
 }
+
 function renderChart(){
-  const canvas = document.getElementById('weightChart');
-  const empty = document.getElementById('emptyChart');
-  const tableWrap = document.getElementById('weekTableWrap');
-  const entries = filteredEntries();
+  const canvas=document.getElementById('weightChart');
+  const empty=document.getElementById('emptyChart');
+  const tableWrap=document.getElementById('weekTableWrap');
+  const entries=filteredEntries();
   if(chartInst){ chartInst.destroy(); chartInst=null; }
   tableWrap.innerHTML='';
+
   if(!entries.length){ canvas.style.display='none'; empty.style.display='flex'; return; }
   canvas.style.display='block'; empty.style.display='none';
 
   if(currentView==='diari'){
-    const allEntries = sortedEntries();
-    const reg = linearRegression(allEntries);
+    const all=sortedEntries();
+    const reg=weightedRegression(all,HALF_LIFE_DAYS);
+    const emaAll=emaSeries(all,EMA_ALPHA);
+    const emaMap={}; emaAll.forEach(([d,v])=>emaMap[d]=v);
 
-    const firstEntryDate = new Date(entries[0][0]);
-    const lastEntryDate = new Date(entries[entries.length-1][0]);
-    const fullDates = [];
-    for(let d=new Date(firstEntryDate); d<=lastEntryDate; d.setDate(d.getDate()+1)){
-      fullDates.push(new Date(d));
-    }
-    const labels = fullDates.map(d=>fmtDate(isoDate(d)));
-    const realData = fullDates.map(d=>{
-      const key = isoDate(d);
-      return Object.prototype.hasOwnProperty.call(weightLog,key) ? weightLog[key] : null;
-    });
+    // eix X amb tots els dies naturals del rang
+    const firstD=new Date(entries[0][0]), lastD=new Date(entries[entries.length-1][0]);
+    const fullDates=[];
+    for(let d=new Date(firstD); d<=lastD; d.setDate(d.getDate()+1)) fullDates.push(new Date(d));
 
-    let trendData = new Array(fullDates.length).fill(null);
-    if(reg){
-      trendData = fullDates.map(d=>{
-        const t=(d.getTime()-reg.t0)/86400000;
-        return +(reg.intercept + reg.slope*t).toFixed(2);
-      });
-    }
-    let futureLabels=[], predData=[];
-    if(reg && reg.slope<0){
-      for(let i=1;i<=6;i++){
-        const d = new Date(lastEntryDate); d.setDate(d.getDate()+i*7);
+    const labels=fullDates.map(d=>fmtDate(isoDate(d)));
+    const realData=fullDates.map(d=>{ const k=isoDate(d); return Object.prototype.hasOwnProperty.call(weightLog,k)?weightLog[k]:null; });
+    const emaData=fullDates.map(d=>{ const k=isoDate(d); return emaMap[k]!==undefined?emaMap[k]:null; });
+
+    let trendData=fullDates.map(()=>null);
+    if(reg) trendData=fullDates.map(d=>+(reg.intercept+reg.slope*((d.getTime()-reg.t0)/86400000)).toFixed(2));
+
+    // predicció només si el rang arriba fins a l'últim registre
+    const includesLatest = isoDate(lastD)===all[all.length-1][0];
+    let futureLabels=[],predData=[];
+    if(reg && reg.slope<0 && includesLatest){
+      for(let i=1;i<=8;i++){
+        const d=new Date(reg.lastDate); d.setDate(d.getDate()+i*7);
         futureLabels.push(fmtDate(isoDate(d)));
-        const t=(d.getTime()-reg.t0)/86400000;
-        predData.push(+(reg.intercept+reg.slope*t).toFixed(2));
+        predData.push(+(reg.intercept+reg.slope*((d.getTime()-reg.t0)/86400000)).toFixed(2));
       }
     }
-    const allLabels = labels.concat(futureLabels);
-    const realFull = realData.concat(futureLabels.map(()=>null));
-    const trendFull = trendData.concat(futureLabels.map(()=>null));
-    const predFull = new Array(Math.max(0,labels.length-1)).fill(null).concat([realData[realData.length-1]]).concat(predData);
 
-    chartInst = new Chart(canvas,{
-      type:'line',
-      data:{labels:allLabels, datasets:[
-        {label:'Pes real', data:realFull, borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,.08)', pointRadius:4, pointBackgroundColor:'#16a34a', tension:.3, fill:true, spanGaps:true},
-        {label:'Tendència', data:trendFull, borderColor:'#0284c7', borderDash:[6,4], pointRadius:0, tension:0, fill:false},
-        {label:'Predicció', data:predFull, borderColor:'#ea580c', borderDash:[2,4], pointRadius:2, tension:0, fill:false}
-      ]},
-      options: chartOptions()
-    });
+    const allLabels=labels.concat(futureLabels);
+    const pad=futureLabels.map(()=>null);
+    const realFull=realData.concat(pad);
+    const emaFull=emaData.concat(pad);
+    const trendFull=trendData.concat(pad);
+    const predFull=new Array(Math.max(0,labels.length-1)).fill(null)
+                    .concat([realData[realData.length-1]]).concat(predData);
+    const goalFull=allLabels.map(()=>MAIN_GOAL);
+
+    const ds=[];
+    if(lineVisible.real)  ds.push({label:'Pes real',data:realFull,borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,.08)',pointRadius:3.5,pointBackgroundColor:'#16a34a',tension:.3,fill:true,spanGaps:true});
+    if(lineVisible.ema)   ds.push({label:'Suavitzat (EMA)',data:emaFull,borderColor:'#7c3aed',borderWidth:2.5,pointRadius:0,tension:.35,fill:false,spanGaps:true});
+    if(lineVisible.trend) ds.push({label:'Tendència',data:trendFull,borderColor:'#0284c7',borderDash:[6,4],pointRadius:0,tension:0,fill:false});
+    if(lineVisible.pred)  ds.push({label:'Predicció',data:predFull,borderColor:'#ea580c',borderDash:[2,4],pointRadius:2,tension:0,fill:false});
+    if(lineVisible.goal)  ds.push({label:'Objectiu ('+MAIN_GOAL+' kg)',data:goalFull,borderColor:'#dc2626',borderDash:[8,4],borderWidth:1.5,pointRadius:0,tension:0,fill:false});
+
+    chartInst=new Chart(canvas,{type:'line',data:{labels:allLabels,datasets:ds},options:chartOptions()});
+
   } else {
     const weeks={};
-    entries.forEach(([d,w])=>{ const wk=isoWeekKey(d); if(!weeks[wk]) weeks[wk]=[]; weeks[wk].push(w); });
-    const wKeys = Object.keys(weeks).sort();
+    entries.forEach(([d,w])=>{ const k=isoWeekKey(d); (weeks[k]=weeks[k]||[]).push(w); });
+    const wKeys=Object.keys(weeks).sort();
     const avgV=[],maxV=[],minV=[];
-    wKeys.forEach(k=>{ const arr=weeks[k]; avgV.push(+(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2)); maxV.push(Math.max(...arr)); minV.push(Math.min(...arr)); });
-    chartInst = new Chart(canvas,{
-      type:'line',
-      data:{labels:wKeys, datasets:[
-        {label:'Mitjana',data:avgV,borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,.08)',pointRadius:4,tension:.3,fill:true},
-        {label:'Màxim',data:maxV,borderColor:'#dc2626',borderDash:[4,3],pointRadius:3,tension:.3,fill:false},
-        {label:'Mínim',data:minV,borderColor:'#0284c7',borderDash:[4,3],pointRadius:3,tension:.3,fill:false},
-        {label:'Objectiu',data:wKeys.map(()=>MAIN_GOAL),borderColor:'#7c3aed',borderDash:[8,4],pointRadius:0,tension:0,fill:false}
-      ]},
-      options: chartOptions()
+    wKeys.forEach(k=>{const a=weeks[k];avgV.push(+(a.reduce((x,y)=>x+y,0)/a.length).toFixed(2));maxV.push(Math.max(...a));minV.push(Math.min(...a));});
+    const ds=[
+      {label:'Mitjana',data:avgV,borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,.08)',pointRadius:4,tension:.3,fill:true},
+      {label:'Màxim',data:maxV,borderColor:'#dc2626',borderDash:[4,3],pointRadius:3,tension:.3,fill:false},
+      {label:'Mínim',data:minV,borderColor:'#0284c7',borderDash:[4,3],pointRadius:3,tension:.3,fill:false}
+    ];
+    if(lineVisible.goal) ds.push({label:'Objectiu',data:wKeys.map(()=>MAIN_GOAL),borderColor:'#7c3aed',borderDash:[8,4],pointRadius:0,tension:0,fill:false});
+    chartInst=new Chart(canvas,{type:'line',data:{labels:wKeys,datasets:ds},options:chartOptions()});
+
+    let html='<table class="hist"><thead><tr><th>Setmana</th><th>Mitjana</th><th>Màxim</th><th>Mínim</th><th>Δ setmana</th><th>Dies</th></tr></thead><tbody>';
+    wKeys.forEach((w,i)=>{
+      const delta=i>0?(avgV[i]-avgV[i-1]):null;
+      html+='<tr><td>'+w+'</td><td><b>'+avgV[i].toFixed(2)+' kg</b></td>'+
+        '<td style="color:var(--danger)">'+maxV[i].toFixed(2)+'</td>'+
+        '<td style="color:var(--recov)">'+minV[i].toFixed(2)+'</td>'+
+        '<td style="color:'+(delta==null?'var(--dim)':delta<=0?'var(--gym)':'var(--danger)')+'">'+(delta==null?'—':(delta>0?'+':'')+delta.toFixed(2)+' kg')+'</td>'+
+        '<td>'+weeks[w].length+'</td></tr>';
     });
-    let html='<table class="hist" style="margin-top:14px;"><thead><tr><th>Setmana</th><th>Mitjana</th><th>Màxim</th><th>Mínim</th><th>Dies</th></tr></thead><tbody>';
-    wKeys.forEach((w,i)=>{ html+='<tr><td>'+w+'</td><td><b>'+avgV[i]+' kg</b></td><td style="color:var(--danger)">'+maxV[i]+' kg</td><td style="color:var(--pool)">'+minV[i]+' kg</td><td>'+weeks[w].length+'</td></tr>'; });
-    html+='</tbody></table>';
-    tableWrap.innerHTML = html;
+    tableWrap.innerHTML=html+'</tbody></table>';
   }
 }
 
+function renderRangeStats(){
+  const entries=filteredEntries();
+  const b=rangeBounds();
+  const head=document.getElementById('rangeStatsHead');
+  const box=document.getElementById('rangeChips');
+  head.textContent='ESTADÍSTIQUES · '+(b?b.label.toUpperCase():'');
+
+  if(entries.length<1){ box.innerHTML='<div class="range-chip"><div class="rc-lbl">Sense dades</div><div class="rc-val">—</div></div>'; return; }
+  if(entries.length<2){
+    box.innerHTML='<div class="range-chip"><div class="rc-lbl">Únic registre</div><div class="rc-val">'+entries[0][1].toFixed(2)+' kg</div><div class="rc-sub">'+fmtDate(entries[0][0])+'</div></div>';
+    return;
+  }
+
+  const ws=entries.map(e=>e[1]);
+  const first=entries[0], last=entries[entries.length-1];
+  const diff=last[1]-first[1];
+  const spanDays=daysBetween(first[0],last[0])+1;
+  const ratePerWeek=diff/spanDays*7;
+  const minW=Math.min(...ws), maxW=Math.max(...ws);
+  const minD=entries.find(e=>e[1]===minW)[0], maxD=entries.find(e=>e[1]===maxW)[0];
+  const mean=ws.reduce((a,c)=>a+c,0)/ws.length;
+  const sd=Math.sqrt(ws.reduce((a,c)=>a+Math.pow(c-mean,2),0)/ws.length);
+  const adher=(entries.length/spanDays)*100;
+
+  let down=0,up=0,same=0;
+  for(let i=1;i<entries.length;i++){
+    const d=entries[i][1]-entries[i-1][1];
+    if(d<-0.005) down++; else if(d>0.005) up++; else same++;
+  }
+
+  const chips=[
+    {lbl:'Pes perdut',val:(diff<0?(-diff).toFixed(2):'+'+diff.toFixed(2))+' kg',sub:(diff<0?'↓ baixada':(diff>0?'↑ pujada':'sense canvi')),color:diff<=0?'var(--gym)':'var(--danger)'},
+    {lbl:'Ritme del rang',val:(ratePerWeek<0?(-ratePerWeek).toFixed(2):'+'+ratePerWeek.toFixed(2))+' kg/s',sub:'per setmana',color:ratePerWeek<=0?'var(--gym)':'var(--danger)'},
+    {lbl:'Pes inicial',val:first[1].toFixed(2)+' kg',sub:fmtDate(first[0])},
+    {lbl:'Pes final',val:last[1].toFixed(2)+' kg',sub:fmtDate(last[0])},
+    {lbl:'Mínim',val:minW.toFixed(2)+' kg',sub:fmtDate(minD),color:'var(--recov)'},
+    {lbl:'Màxim',val:maxW.toFixed(2)+' kg',sub:fmtDate(maxD),color:'var(--danger)'},
+    {lbl:'Mitjana',val:mean.toFixed(2)+' kg',sub:'del rang'},
+    {lbl:'Amplitud',val:(maxW-minW).toFixed(2)+' kg',sub:'màx − mín'},
+    {lbl:'Volatilitat (σ)',val:sd.toFixed(2)+' kg',sub:'oscil·lació'},
+    {lbl:'Registres',val:entries.length,sub:'de '+spanDays+' dies'},
+    {lbl:'Adherència',val:adher.toFixed(0)+'%',sub:'dies registrats'},
+    {lbl:'Dies a la baixa',val:down+' / '+(down+up+same),sub:((down/(down+up+same))*100).toFixed(0)+'% de les vegades',color:'var(--gym)'}
+  ];
+  box.innerHTML=chips.map(c=>'<div class="range-chip"><div class="rc-lbl">'+c.lbl+'</div><div class="rc-val" style="color:'+(c.color||'var(--text)')+'">'+c.val+'</div><div class="rc-sub">'+(c.sub||'')+'</div></div>').join('');
+}
+
 /* ============================================================
-   EVENTS / INIT
+   EVENTS
    ============================================================ */
 document.getElementById('rangeSeg').addEventListener('click',e=>{
   if(e.target.tagName!=='BUTTON') return;
   document.querySelectorAll('#rangeSeg button').forEach(b=>b.classList.remove('active'));
   e.target.classList.add('active');
-  currentRange = e.target.getAttribute('data-range');
-  renderChart();
+  const r=e.target.getAttribute('data-range');
+  const box=document.getElementById('customRangeBox');
+  if(r==='custom'){
+    box.classList.add('open');
+    const all=sortedEntries();
+    if(all.length && !document.getElementById('customFrom').value){
+      document.getElementById('customFrom').value=all[0][0];
+      document.getElementById('customTo').value=all[all.length-1][0];
+    }
+    return; // espera a "Aplicar"
+  }
+  box.classList.remove('open');
+  currentRange=r;
+  renderChart(); renderRangeStats();
 });
+
 document.getElementById('viewSeg').addEventListener('click',e=>{
   if(e.target.tagName!=='BUTTON') return;
   document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.remove('active'));
   e.target.classList.add('active');
-  currentView = e.target.getAttribute('data-view');
+  currentView=e.target.getAttribute('data-view');
   renderChart();
 });
 
-const sectionsForReveal = document.querySelectorAll('section');
-const io = new IntersectionObserver((entriesList)=>{
-  entriesList.forEach(en=>{ if(en.isIntersecting) en.target.classList.add('in-view'); });
-},{threshold:.08});
-sectionsForReveal.forEach(s=>io.observe(s));
+document.getElementById('lineToggles').addEventListener('click',e=>{
+  if(!e.target.classList.contains('chip')) return;
+  const k=e.target.getAttribute('data-line');
+  lineVisible[k]=!lineVisible[k];
+  e.target.classList.toggle('active',lineVisible[k]);
+  renderChart();
+});
+
+document.getElementById('weightKg').addEventListener('keydown',e=>{ if(e.key==='Enter') saveWeight(); });
+
+const io=new IntersectionObserver(l=>{l.forEach(en=>{if(en.isIntersecting)en.target.classList.add('in-view');});},{threshold:.06});
+document.querySelectorAll('section').forEach(s=>io.observe(s));
 
 function renderAll(){
   renderDashboard();
@@ -804,10 +1167,11 @@ function renderAll(){
   renderDayDetail(selectedDow);
   renderHistory();
   renderChart();
+  renderRangeStats();
 }
 
-window.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('weightDate').value = todayStr();
+window.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('weightDate').value=todayStr();
   renderCalendar();
   renderDayDetail(selectedDow);
 });
